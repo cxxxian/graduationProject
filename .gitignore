@@ -1,0 +1,43 @@
+# --- 只提交 Assets/Scripts，忽略其他所有内容 ---
+
+# 忽略所有文件
+*
+
+# 但不要忽略这些目录（保持路径存在）
+!System/
+!System/Assets/
+!System/Assets/Scripts/
+
+# 允许 Scripts 下的所有文件
+!System/Assets/Scripts/**
+!System/Assets/Scripts/**/*.cs
+
+# --- Unity 自动生成的目录全部忽略 ---
+/System/Library/
+/System/Temp/
+/System/Obj/
+/System/Build/
+/System/Logs/
+/System/UserSettings/
+/System/MemoryCaptures/
+/System/ProjectSettings/
+/System/Packages/
+/System/*.sln
+/System/*.csproj
+/System/*.unityproj
+
+# --- 忽略 Unity 导入相关文件 ---
+*.meta
+*.unitypackage
+
+# --- 忽略 VS / Rider 自动生成 ---
+*.csproj
+*.unityproj
+*.pidb
+*.user
+*.booproj
+*.svd
+
+# --- 忽略操作系统垃圾文件 ---
+.DS_Store
+Thumbs.db

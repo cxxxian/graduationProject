@@ -166,7 +166,10 @@ public class ShoppingTaskController : MonoBehaviour
     private bool CheckRuleTask()
     {
         // 买了酸奶 -> 必须减少一包饼干
-        bool ok = (curBiscuitNormal >= (targetBiscuitNormal - 1)) && (totalPrice <= budgetLimit);
+        bool ok = (curBiscuitNormal >= (targetBiscuitNormal - 1)) && 
+            (totalPrice <= budgetLimit) && 
+            (curMilkOriginal >= targetMilkOriginal) && 
+            (curPencilHB >= targetPencilHB);
         return ok;
     }
 

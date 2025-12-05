@@ -10,8 +10,8 @@ public interface ITask
     // 任务名称
     string TaskName { get; }
 
-    // 任务进度 (0 ~ 1)
-    float GetProgress();
+    //// 任务进度 (0 ~ 1)
+    //float GetProgress();
 
     // 任务初始化
     void InitializeTask();

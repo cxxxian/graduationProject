@@ -22,6 +22,8 @@ public class ShoppingCart : MonoBehaviour
 
     // 右手设备
     private InputDevice rightHand;
+    // 左手设备
+    private InputDevice leftHand;
 
     // 用来做按下瞬间检测
     private bool lastAPressed = false;
@@ -34,7 +36,7 @@ public class ShoppingCart : MonoBehaviour
     public Transform playerRig;
     // 购物车的 Transform
     public Transform cart;
-    // 当前是否处于推车状态
+    // 当前手是否在是推车状态
     bool isPushing = false;
 
     // 记录购物车相对玩家的局部坐标偏移
@@ -42,8 +44,13 @@ public class ShoppingCart : MonoBehaviour
     // 玩家与购物车之间的水平旋转差（角度）
     private float yawOffset;
 
+    public BasketTrigger basketTrigger;
+
     void Start()
     {
+        if (basketTrigger == null)
+            basketTrigger = GetComponent<BasketTrigger>();
+
         calculatorPricePanel.SetActive(false);
         ResultPanel.SetActive(false);
 
@@ -52,13 +59,62 @@ public class ShoppingCart : MonoBehaviour
         InputDevices.GetDevicesAtXRNode(XRNode.RightHand, devices);
 
         if (devices.Count > 0)
+        {
             rightHand = devices[0];
+        }
+
+        // 获取左手设备
+        devices.Clear();
+        InputDevices.GetDevicesAtXRNode(XRNode.LeftHand, devices);
+
+        if (devices.Count > 0)
+        {
+            leftHand = devices[0];
+        }
+
     }
 
     void Update()
     {
+        // 如果设备无效，则尝试重新获取
+        if (!rightHand.isValid)
+        {
+            var devices = new List<InputDevice>();
+            InputDevices.GetDevicesAtXRNode(XRNode.RightHand, devices);
+
+            if (devices.Count > 0)
+            {
+                rightHand = devices[0];
+                Debug.Log("RightHand 重新连接");
+            }
+            return;
+        }
+        if (!leftHand.isValid)
+        {
+            var devices = new List<InputDevice>();
+            InputDevices.GetDevicesAtXRNode(XRNode.LeftHand, devices);
+
+            if (devices.Count > 0)
+            {
+                leftHand = devices[0];
+                Debug.Log("LeftHand 重新连接");
+            }
+            return;
+        }
+
+        bool rightTrigger = false;
+        bool leftTrigger = false;
+
+        rightHand.TryGetFeatureValue(CommonUsages.triggerButton, out rightTrigger);
+        leftHand.TryGetFeatureValue(CommonUsages.triggerButton, out leftTrigger);
+
+        // 双手必须都按下
+        bool isFinalPushing = (rightTrigger && leftTrigger && isPushing);
+
+        
+
         // 推车逻辑
-        if (isPushing)
+        if (isFinalPushing)
         {
             // 当前帧计算购物车应在的世界坐标
             // 玩家 TransformPoint 可以把 localOffset 转换成正确的世界坐标
@@ -74,23 +130,36 @@ public class ShoppingCart : MonoBehaviour
             float playerYaw = playerRig.eulerAngles.y;
             float targetYaw = playerYaw + yawOffset;
             cart.rotation = Quaternion.Euler(0f, targetYaw, 0f);
+
         }
+        // 让购物车内物体跟随
+        if(basketTrigger != null)
+        {
+            foreach (var info in basketTrigger.insideBasketItems)
+            {
+                if (info.obj == null)
+                {
+                    continue;
+                }
+
+                Rigidbody rb = info.obj.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    // 推动时禁用物理，停止推动恢复物理
+                    rb.isKinematic = isFinalPushing;
+                }
+
+                // 仅在推动时控制位置和旋转
+                if (isFinalPushing)
+                {
+                    info.obj.transform.position = cart.TransformPoint(info.localPos);
+                    info.obj.transform.rotation = cart.rotation * info.localRot;
+                }
+            }
+        }
+        
 
         // 购物车 UI 交互逻辑
-        // 如果设备无效，则尝试重新获取
-        if (!rightHand.isValid)
-        {
-            var devices = new List<InputDevice>();
-            InputDevices.GetDevicesAtXRNode(XRNode.RightHand, devices);
-
-            if (devices.Count > 0)
-            {
-                rightHand = devices[0];
-                Debug.Log("RightHand 重新连接");
-            }
-            return;
-        }
-
         bool aPressed = false;
 
         // primaryButton = A / B 之一（看系统映射）

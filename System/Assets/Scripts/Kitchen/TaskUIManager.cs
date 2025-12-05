@@ -10,6 +10,10 @@ public class TaskUIManager : MonoBehaviour
     public TMP_Text coffeeStatusText;
     public TMP_Text bananaStatusText;
 
+    [Header("购物练习任务对应的状态文本")]
+    public TMP_Text panelStatusText;
+    public TMP_Text pushStatusText;
+
     // 更新面包任务状态
     public void SetBreadTaskComplete(bool completed)
     {
@@ -35,6 +39,24 @@ public class TaskUIManager : MonoBehaviour
         if (bananaStatusText != null)
         {
             bananaStatusText.text = completed ? "已完成" : "未完成";
+        }
+    }
+
+    // 更新开启/关闭虚拟计算器面板任务状态
+    public void SetPanelTaskComplete(bool completed)
+    {
+        if (panelStatusText != null)
+        {
+            panelStatusText.text = completed ? "已完成" : "未完成";
+        }
+    }
+
+    // 更新推车任务状态
+    public void SetPushTaskComplete(bool completed)
+    {
+        if (pushStatusText != null)
+        {
+            pushStatusText.text = completed ? "已完成" : "未完成";
         }
     }
 

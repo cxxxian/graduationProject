@@ -30,9 +30,6 @@ public class SceneTaskManager : MonoBehaviour
     [Header("开始游戏后要隐藏的 UI 面板")]
     public GameObject taskUIPanel;
 
-
-
-
     void Start()
     {
         // 延迟播放介绍音频
@@ -127,6 +124,13 @@ public class SceneTaskManager : MonoBehaviour
                     case "拿两片吐司到盘子中":
                         uiManager.SetBreadTaskComplete(done);
                         break;
+                    case "开启/关闭虚拟计算器":
+                        uiManager.SetPanelTaskComplete(done);
+                        break;
+                    case "推动购物车到指定位置":
+                        uiManager.SetPushTaskComplete(done);
+                        break;
+
                 }
             }
 

@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BasketTrigger : MonoBehaviour
 {
     [Tooltip("指定用来检测物品的 Trigger Collider")]
     public Collider triggerCollider;
+
+    public List<BasketItemInfo> insideBasketItems = new List<BasketItemInfo>();
 
     void Awake()
     {
@@ -25,6 +28,11 @@ public class BasketTrigger : MonoBehaviour
         Debug.Log("ItemComponent: " + (itemComp != null ? itemComp.data.itemName : "null"));
         if (itemComp == null) return;
 
+        if (!insideBasketItems.Exists(x => x.obj == other.gameObject))
+        {
+            insideBasketItems.Add(new BasketItemInfo(other.gameObject, transform));
+        }
+
         // 调用任务统计
         var taskController = FindObjectOfType<ShoppingTaskController>();
         taskController?.OnItemAdded(itemComp);
@@ -37,8 +45,11 @@ public class BasketTrigger : MonoBehaviour
         Debug.Log("ItemComponent: " + (itemComp != null ? itemComp.data.itemName : "null"));
         if (itemComp == null) return;
 
+        insideBasketItems.RemoveAll(x => x.obj == other.gameObject);
+
         // 调用任务统计
         var taskController = FindObjectOfType<ShoppingTaskController>();
         taskController?.OnItemMinus(itemComp);
     }
 }
+

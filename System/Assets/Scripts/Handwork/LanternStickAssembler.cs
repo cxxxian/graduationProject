@@ -1,44 +1,52 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
-
-
 
 public class LanternSlotSnapper : MonoBehaviour
 {
-    [Header("Íæ¼Òµ±Ç°ÊÖÖĞµÄÖñÌõ")]
+
+    [Header("ç©å®¶å½“å‰æ‰‹ä¸­çš„ç«¹æ¡")]
     public Transform currentStick;
 
-    [Header("ÏÂ / ÖĞ / ÉÏ Èı²ã²å²Û")]
-    public SlotLayer downLayer;
-    public SlotLayer middleLayer;
-    public SlotLayer upLayer;
+    [Header("ä¸‹ / ä¸­ / ä¸Š ä¸‰å±‚æœ¨æ£æ’æ§½")]
+    public SlotLayer downStickLayer;
+    public SlotLayer middleStickLayer;
+    public SlotLayer upStickLayer;
 
-    [Header("Îü¸½ÅĞ¶¨¾àÀë")]
+    [Header("ä¸‹ / ä¸­ èƒ¶æ°´å±‚")]
+    public GluePoint[] downGlueLayer;
+    public GluePoint[] middleGlueLayer;
+
+    [Header("å¸é™„åˆ¤å®šè·ç¦»")]
     public float snapDistance = 0.1f;
 
-    [Header("Í¸Ã÷²å²ÛÏÔÊ¾¾àÀë")]
+    [Header("é€æ˜æ’æ§½æ˜¾ç¤ºè·ç¦»")]
     public float showGhostDistance = 0.25f;
 
-    [Header("Îü¸½ËÙ¶È")]
+    [Header("å¸é™„é€Ÿåº¦")]
     public float snapSpeed = 10f;
 
-    [Header("²åÈëºóÊ¹ÓÃµÄÊµÌå²ÄÖÊ")]
+    [Header("æ’å…¥åä½¿ç”¨çš„å®ä½“æè´¨")]
     public Material solidMaterial;
 
-    private LanternStage currentStage = LanternStage.Down;
+    public BuildStage currentStage = BuildStage.DownBuild;
     private bool isSnapping = false;
 
     private void Start()
     {
-        InitLayer(downLayer);
-        InitLayer(middleLayer);
-        InitLayer(upLayer);
+        InitLayer(downStickLayer);
+        InitLayer(middleStickLayer);
+        InitLayer(upStickLayer);
 
-        currentStage = LanternStage.Down;
+        currentStage = BuildStage.DownBuild;
     }
 
     private void Update()
     {
+        if (!IsStickStage())
+        {
+            return;
+        }
+
         if (currentStick == null || !currentStick.gameObject.activeSelf)
             return;
 
@@ -52,7 +60,7 @@ public class LanternSlotSnapper : MonoBehaviour
         int nearestSlot = -1;
         float nearestDist = float.MaxValue;
 
-        // ÕÒ×î½üµÄÎ´Ìî³ä²å²Û
+        // æ‰¾æœ€è¿‘çš„æœªå¡«å……æ’æ§½ 
         for (int i = 0; i < layer.ghostSlots.Length; i++)
         {
             if (layer.filled[i]) continue;
@@ -72,7 +80,7 @@ public class LanternSlotSnapper : MonoBehaviour
         if (nearestSlot == -1)
             return;
 
-        // ÏÔÊ¾ / Òş²Ø ghost
+        // æ˜¾ç¤º / éšè— ghost
         if (nearestDist < showGhostDistance)
             ShowOnlyGhost(layer, nearestSlot);
         else
@@ -81,7 +89,7 @@ public class LanternSlotSnapper : MonoBehaviour
             return;
         }
 
-        // Îü¸½
+        // å¸é™„
         if (nearestDist < snapDistance)
             StartCoroutine(SnapStickToSlot(layer, nearestSlot));
     }
@@ -93,7 +101,7 @@ public class LanternSlotSnapper : MonoBehaviour
 
         Transform slot = layer.ghostSlots[index];
 
-        // Îü¸½¶¯»­
+        // å¸é™„åŠ¨ç”»
         Vector3 startPos = currentStick.position;
         Quaternion startRot = currentStick.rotation;
 
@@ -109,10 +117,10 @@ public class LanternSlotSnapper : MonoBehaviour
             yield return null;
         }
 
-        // ÊÖÖĞÄ¾¹÷ÏûÊ§
+        // æ‰‹ä¸­æœ¨æ£æ¶ˆå¤±
         currentStick.gameObject.SetActive(false);
 
-        // ghost ¡ú ÊµÌå
+        // ghost â†’ å®ä½“
         Renderer[] renderers = slot.GetComponentsInChildren<Renderer>(true);
         foreach (Renderer r in renderers)
             r.material = solidMaterial;
@@ -121,37 +129,68 @@ public class LanternSlotSnapper : MonoBehaviour
 
         HideAllGhosts(layer);
 
-        // ¼ì²éÊÇ·ñÍê³É¸Ã²ã
-        if (IsLayerFinished(layer))
-            AdvanceStage();
+        // æ£€æŸ¥æ˜¯å¦å®Œæˆè¯¥å±‚
+        if (IsLayerStructureFinished(layer))
+        {
+            EnterGlueStage();
+            //AdvanceStage();
+        }
+
 
         isSnapping = false;
+    }
+    void EnterGlueStage()
+    {
+        if (currentStage == BuildStage.DownBuild)
+        {
+            currentStage = BuildStage.DownGlue;
+            Debug.Log("è¿›å…¥ DownGlue é˜¶æ®µ");
+        }
+        else if (currentStage == BuildStage.MiddleBuild)
+        {
+            currentStage = BuildStage.MiddleGlue;
+            Debug.Log("è¿›å…¥ MiddleGlue é˜¶æ®µ");
+        }
+
+    }
+    public void OnGlueLayerFinished()
+    {
+        if (currentStage == BuildStage.DownGlue)
+        {
+            currentStage = BuildStage.MiddleBuild;
+            Debug.Log("è¿›å…¥ MiddleBuild");
+        }
+        else if (currentStage == BuildStage.MiddleGlue)
+        {
+            currentStage = BuildStage.UpBuild;
+            Debug.Log("è¿›å…¥ UpBuild");
+        }
     }
 
     void AdvanceStage()
     {
-        if (currentStage == LanternStage.Down)
-            currentStage = LanternStage.Middle;
-        else if (currentStage == LanternStage.Middle)
-            currentStage = LanternStage.Up;
-        else if (currentStage == LanternStage.Up)
-            currentStage = LanternStage.Finished;
+        if (currentStage == BuildStage.DownBuild)
+            currentStage = BuildStage.MiddleBuild;
+        else if (currentStage == BuildStage.MiddleBuild)
+            currentStage = BuildStage.UpBuild;
+        else if (currentStage == BuildStage.UpBuild)
+            currentStage = BuildStage.Finished;
 
-        Debug.Log("½øÈë½×¶Î£º" + currentStage);
+        Debug.Log("è¿›å…¥é˜¶æ®µï¼š" + currentStage);
     }
 
     SlotLayer GetCurrentLayer()
     {
         switch (currentStage)
         {
-            case LanternStage.Down: return downLayer;
-            case LanternStage.Middle: return middleLayer;
-            case LanternStage.Up: return upLayer;
+            case BuildStage.DownBuild: return downStickLayer;
+            case BuildStage.MiddleBuild: return middleStickLayer;
+            case BuildStage.UpBuild: return upStickLayer;
             default: return null;
         }
     }
 
-    bool IsLayerFinished(SlotLayer layer)
+    bool IsLayerStructureFinished(SlotLayer layer)
     {
         foreach (bool f in layer.filled)
             if (!f) return false;
@@ -193,14 +232,33 @@ public class LanternSlotSnapper : MonoBehaviour
         if (currentStick == stick)
             currentStick = null;
     }
+
+    //æ˜¯å¦ä¸ºæ­å»ºæœ¨æ£é˜¶æ®µ
+    public bool IsStickStage()
+    {
+        return currentStage == BuildStage.DownBuild 
+            || currentStage == BuildStage.MiddleBuild 
+            || currentStage == BuildStage.UpBuild;
+    }
+
+    //æ˜¯å¦ä¸ºèƒ¶æ°´æ¶‚æŠ¹é˜¶æ®µ
+    public bool IsGlueStage()
+    {
+        return currentStage == BuildStage.DownGlue
+            || currentStage == BuildStage.MiddleGlue;
+    }
 }
 
-// Êı¾İ½á¹¹
-public enum LanternStage
+// æ•°æ®ç»“æ„
+public enum BuildStage
 {
-    Down,
-    Middle,
-    Up,
+    // åº•å±‚æ‹¼æ¥
+    DownBuild,
+    // åº•å±‚ä¸Šèƒ¶
+    DownGlue,
+    MiddleBuild,
+    MiddleGlue,
+    UpBuild,
     Finished
 }
 
@@ -210,4 +268,3 @@ public class SlotLayer
     public Transform[] ghostSlots;
     [HideInInspector] public bool[] filled;
 }
-

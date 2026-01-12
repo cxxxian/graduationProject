@@ -9,7 +9,7 @@ public class GluePoint : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!snapper.IsGlueStage())
+        if (snapper.IsStickStage() || snapper.IsPlasterStage())
         {
             return;
         }

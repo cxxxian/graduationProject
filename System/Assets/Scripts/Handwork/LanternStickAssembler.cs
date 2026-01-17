@@ -24,6 +24,9 @@ public class LanternSlotSnapper : MonoBehaviour
     [Header("Star贴纸插槽层")]
     public SlotLayer middleStarLayer;
 
+    [Header("Tassel插槽层")]
+    public SlotLayer tasselLayer;
+
     [Header("吸附判定距离")]
     public float snapDistance = 0.1f;
 
@@ -53,6 +56,7 @@ public class LanternSlotSnapper : MonoBehaviour
         InitLayer(middlePlasterLayer);
         InitLayer(upPlasterLayer);
         InitLayer(middleStarLayer);
+        InitLayer(tasselLayer);
 
         currentStage = BuildStage.DownBuild;
     }
@@ -127,10 +131,15 @@ public class LanternSlotSnapper : MonoBehaviour
                 StartCoroutine(SnapStickToSlot(layer, nearestSlot));
                 Debug.Log("吸附QuadPlaster");
             }
-            else if (layer == middleStarLayer)
+            else if (layer == middleStarLayer && currentStick.CompareTag("Star"))
             {
                 StartCoroutine(SnapStickToSlot(layer, nearestSlot));
                 Debug.Log("吸附Star");
+            }
+            else if (layer == tasselLayer)
+            {
+                StartCoroutine(SnapStickToSlot(layer, nearestSlot));
+                Debug.Log("吸附Tassel");
             }
             else
             {
@@ -181,6 +190,11 @@ public class LanternSlotSnapper : MonoBehaviour
             foreach (Renderer r in renderers)
                 r.material = starMaterial;
         }
+        else if (IsTasselStage())
+        {
+            foreach (Renderer r in renderers)
+                r.material = plasterMaterial;
+        }
 
 
         slot.gameObject.SetActive(true);
@@ -193,7 +207,8 @@ public class LanternSlotSnapper : MonoBehaviour
             currentStage != BuildStage.DownPlaster && 
             currentStage != BuildStage.MiddlePlaster && 
             currentStage != BuildStage.UpPlaster && 
-            currentStage != BuildStage.MiddleStar))
+            currentStage != BuildStage.MiddleStar &&
+            currentStage != BuildStage.Tassel))
         {
             EnterGlueStage();
         }
@@ -201,7 +216,9 @@ public class LanternSlotSnapper : MonoBehaviour
             (currentStage == BuildStage.UpBuild || 
             currentStage == BuildStage.DownPlaster || 
             currentStage == BuildStage.MiddlePlaster || 
-            currentStage == BuildStage.UpPlaster))
+            currentStage == BuildStage.UpPlaster ||
+            currentStage == BuildStage.MiddleStar ||
+            currentStage == BuildStage.Tassel))
         {
             EnterPlasterStage();
         }
@@ -243,6 +260,11 @@ public class LanternSlotSnapper : MonoBehaviour
             currentStage = BuildStage.MiddleStar;
             Debug.Log("进入 MiddleStar 阶段");
         }
+        else if (currentStage == BuildStage.MiddleStar)
+        {
+            currentStage = BuildStage.Tassel;
+            Debug.Log("进入 Tassel 阶段");
+        }
     }
     public void OnGlueLayerFinished()
     {
@@ -269,6 +291,7 @@ public class LanternSlotSnapper : MonoBehaviour
             case BuildStage.MiddlePlaster: return middlePlasterLayer;
             case BuildStage.UpPlaster: return upPlasterLayer;
             case BuildStage.MiddleStar: return middleStarLayer;
+            case BuildStage.Tassel: return tasselLayer;
             default: return null;
         }
     }
@@ -344,6 +367,12 @@ public class LanternSlotSnapper : MonoBehaviour
     {
         return currentStage == BuildStage.MiddleStar;
     }
+
+    //是否为Tassel阶段
+    public bool IsTasselStage()
+    {
+        return currentStage == BuildStage.Tassel;
+    }
 }
 
 // 数据结构
@@ -360,6 +389,7 @@ public enum BuildStage
     MiddlePlaster,
     UpPlaster,
     MiddleStar,
+    Tassel,
     Finished
 }
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public class LanternSlotSnapper : MonoBehaviour
+public class LanternStickAssembler : MonoBehaviour
 {
 
     [Header("玩家当前手中的竹条")]
@@ -264,6 +264,11 @@ public class LanternSlotSnapper : MonoBehaviour
         {
             currentStage = BuildStage.Tassel;
             Debug.Log("进入 Tassel 阶段");
+        }
+        else if (currentStage == BuildStage.Tassel)
+        {
+            currentStage = BuildStage.Finished;
+            Debug.Log("进入 Finished 阶段");
         }
     }
     public void OnGlueLayerFinished()

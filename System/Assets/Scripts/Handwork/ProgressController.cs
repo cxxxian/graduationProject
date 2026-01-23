@@ -11,10 +11,14 @@ public class ProgressController : MonoBehaviour
     public GameObject emptyPage;
     // 任务未完成提示面板
     public GameObject uncompletedPage;
+    // 任务未完成提示面板
+    public GameObject completedPage;
     // 每个任务面板显示的时长
     public float showPageDuration = 5f;
     // 未完成面板显示时长
-    public float uncompletedShowDuration = 5f; 
+    public float uncompletedShowDuration = 5f;
+
+    public LanternStickAssembler snapper;
 
     [Header("按钮")]
     public Button againButton;
@@ -45,6 +49,11 @@ public class ProgressController : MonoBehaviour
         if (uncompletedPage == null)
         {
             Debug.LogWarning("任务未完成面板未赋值，请检查！");
+            return;
+        }
+        if (completedPage == null)
+        {
+            Debug.LogWarning("任务完成面板未赋值，请检查！");
             return;
         }
 
@@ -78,6 +87,8 @@ public class ProgressController : MonoBehaviour
         if (emptyPage != null) emptyPage.SetActive(false);
         // 隐藏未完成面板
         if (uncompletedPage != null) uncompletedPage.SetActive(false);
+        // 隐藏完成面板
+        if (completedPage != null) completedPage.SetActive(false);
 
         isOnEmptyPage = false;
     }
@@ -130,6 +141,7 @@ public class ProgressController : MonoBehaviour
         {
             Debug.Log("所有任务已完成！");
             emptyPage.SetActive(false);
+            completedPage.SetActive(true);
             return;
         }
 
@@ -222,10 +234,24 @@ public class ProgressController : MonoBehaviour
     // return是否完成
     private bool CheckCurrentTaskCompletion()
     {
-        // TODO: 在这里实现你的任务完成检查逻辑
-        // 示例：返回true表示完成，false表示未完成
         Debug.Log($"检查第 {currentTaskIndex + 1} 个任务是否完成");
-        return true; // 先默认返回true，后期替换为实际逻辑
+        switch (currentTaskIndex)
+        {
+            case 2:
+                return snapper.currentStage == BuildStage.DownGlue;
+            case 3:
+                return snapper.currentStage == BuildStage.MiddleBuild;
+            case 4:
+                return snapper.currentStage == BuildStage.DownPlaster;
+            case 5:
+                return snapper.currentStage == BuildStage.MiddleStar;
+            case 6:
+                return snapper.currentStage == BuildStage.Tassel;
+            case 7:
+                return snapper.currentStage == BuildStage.Finished;
+            default:
+                return false;
+        }
     }
 
     // 防止场景切换/对象销毁时协程残留

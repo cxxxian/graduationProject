@@ -5,7 +5,7 @@ using UnityEngine;
 public class GluePoint : MonoBehaviour
 {
     public bool glued = false;
-    public LanternSlotSnapper snapper;
+    public LanternStickAssembler snapper;
 
     private void OnTriggerEnter(Collider other)
     {

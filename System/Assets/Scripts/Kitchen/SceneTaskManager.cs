@@ -29,6 +29,11 @@ public class SceneTaskManager : MonoBehaviour
 
     [Header("开始游戏后要隐藏的 UI 面板")]
     public GameObject taskUIPanel;
+    public GameObject startButton;
+    public GameObject againButton;
+
+    [Header("任务完成检测")]
+    public TaskEvaluator evaluator;
 
     void Start()
     {
@@ -73,7 +78,9 @@ public class SceneTaskManager : MonoBehaviour
         if (taskUIPanel != null)
         {
             taskUIPanel.SetActive(false);
-        }
+            startButton.SetActive(false);
+            againButton.SetActive(false);
+}
 
         CollectTasks();
 
@@ -153,5 +160,7 @@ public class SceneTaskManager : MonoBehaviour
             taskUIPanel.SetActive(true);
         }
         Debug.Log("任务完成");
+        PlayerEventSystem.Instance.PrintAllLogs();
+        evaluator.Evaluate();
     }
 }

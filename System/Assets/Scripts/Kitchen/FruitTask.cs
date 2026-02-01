@@ -109,7 +109,7 @@ public class FruitTask : MonoBehaviour, ITask
             bananaIndex++;
 
             PlayerEventSystem.Instance.RecordExitZone(
-                obj.transform.root.gameObject,
+                obj.transform.parent.gameObject,
                 "Table"
             );
 
@@ -138,7 +138,7 @@ public class FruitTask : MonoBehaviour, ITask
             bananaInTable.Add(obj);
             bananaIndex++;
 
-            PlayerEventSystem.Instance.RecordEnterZone(obj.transform.root.gameObject, "Table");
+            PlayerEventSystem.Instance.RecordEnterZone(obj.transform.parent.gameObject, "Table");
 
             Debug.Log($"Banana 数量 {bananaInTable.Count}");
 

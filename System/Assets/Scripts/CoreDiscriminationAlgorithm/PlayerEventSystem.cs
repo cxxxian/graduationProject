@@ -22,9 +22,9 @@ public class PlayerEventSystem : MonoBehaviour
         // 进入/离开某个区域
         EnterZone,
         ExitZone,
-        //打开/关闭冰箱
+        //打开/关闭冰箱/任务提示面板
         Open,
-        Close
+        Close,
     }
 
     // 单条事件结构体
@@ -53,7 +53,7 @@ public class PlayerEventSystem : MonoBehaviour
     {
         var e = new PlayerEvent(type, target, currentTime, context);
         logs.Add(e);
-        if (type == EventType.Grab || type == EventType.Grab)
+        if (type == EventType.Grab || type == EventType.Drop)
         {
             Debug.Log($"[PlayerEvent] {type}  Target:{target}  Time:{currentTime}");
         }
@@ -77,6 +77,29 @@ public class PlayerEventSystem : MonoBehaviour
     public void Clear()
     {
         logs.Clear();
+    }
+
+    public void PrintAllLogs()
+    {
+        Debug.Log("===== Player Event Logs Start =====");
+
+        foreach (var e in logs)
+        {
+            if (e.Type == EventType.Grab || e.Type == EventType.Drop)
+            {
+                Debug.Log($"[PlayerEvent] {e.Type}  Target:{e.Target}  Time:{e.Time}");
+            }
+            else if (e.Type == EventType.EnterZone || e.Type == EventType.ExitZone)
+            {
+                Debug.Log($"[PlayerEvent] {e.Type}  Target:{e.Target}  To Zone:{e.Context}  Time:{e.Time}");
+            }
+            else if (e.Type == EventType.Open || e.Type == EventType.Close)
+            {
+                Debug.Log($"[PlayerEvent] {e.Type}  Target:{e.Target}  Time:{e.Time}");
+            }
+        }
+
+        Debug.Log("===== Player Event Logs End =====");
     }
 
 

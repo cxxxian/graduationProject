@@ -23,24 +23,6 @@ public class BreadTask : MonoBehaviour, ITask
         IsTaskComplete = false;
     }
 
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    if (other.CompareTag("Bread"))
-    //    {
-    //        index++;
-    //        breadsInPlate.Add(other.gameObject);
-    //        Debug.Log($"Bread 数量{breadsInPlate.Count}" + $", {index}");
-    //        PlayerEventSystem.Instance.RecordEnterZone(other.transform.parent.gameObject, "Plate");
-    //        if (breadsInPlate.Count >= goalCount)
-    //        {
-    //            IsTaskComplete = true;
-    //            Debug.Log("面包任务完成");
-
-    //        }
-    //    }
-
-    //}
-
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Bread")) return;
@@ -56,17 +38,6 @@ public class BreadTask : MonoBehaviour, ITask
         // 开始延迟确认
         pendingChecks[bread] = StartCoroutine(ConfirmEnter(bread));
     }
-
-    //private void OnTriggerExit(Collider other)
-    //{
-    //    if (other.CompareTag("Bread"))
-    //    {
-    //        index++;
-    //        breadsInPlate.Remove(other.gameObject);
-    //        Debug.Log($"Bread 数量{breadsInPlate.Count}" + $", {index}");
-    //        PlayerEventSystem.Instance.RecordExitZone(other.transform.parent.gameObject, "Plate");
-    //    }
-    //}
 
     private void OnTriggerExit(Collider other)
     {
@@ -87,7 +58,7 @@ public class BreadTask : MonoBehaviour, ITask
         {
             Debug.Log($"Bread 数量 {breadsInPlate.Count}");
 
-            PlayerEventSystem.Instance.RecordExitZone(bread.transform.root.gameObject, "Plate");
+            PlayerEventSystem.Instance.RecordExitZone(bread.transform.parent.gameObject, "Plate");
         }
     }
 
@@ -104,7 +75,7 @@ public class BreadTask : MonoBehaviour, ITask
 
         Debug.Log($"Bread 数量 {breadsInPlate.Count}");
 
-        PlayerEventSystem.Instance.RecordEnterZone(bread.transform.root.gameObject, "Plate");
+        PlayerEventSystem.Instance.RecordEnterZone(bread.transform.parent.gameObject, "Plate");
 
         if (breadsInPlate.Count >= goalCount)
         {

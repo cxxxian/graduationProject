@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.XR;
+using static UnityEngine.Rendering.DebugUI;
 
 public class TaskUIManager : MonoBehaviour
 {
@@ -18,6 +19,11 @@ public class TaskUIManager : MonoBehaviour
     // 右手设备
     private InputDevice rightHand;
 
+    // 通过手柄控制开关的任务面板
+    public GameObject missionPanel;
+    // 上一帧 A 键状态
+    private bool lastAPressed = false;
+
     void Start()
     {
         // 获取右手设备
@@ -30,17 +36,38 @@ public class TaskUIManager : MonoBehaviour
         }
 
     }
-    private void Update()
+    void Update()
     {
-        bool aPressed = false;
-        // primaryButton = A / B 之一（看系统映射）
-        bool primary = rightHand.TryGetFeatureValue(CommonUsages.primaryButton, out aPressed);
+        if (!rightHand.isValid) return;
 
-        // 检测按下瞬间
-        if (aPressed)
+        bool aPressed;
+        rightHand.TryGetFeatureValue(CommonUsages.primaryButton, out aPressed);
+
+        // 只在“按下瞬间”触发
+        if (aPressed && !lastAPressed)
         {
-            Debug.Log("A 按钮按下（捕捉到 DOWN）");
+            TogglePanel();
         }
+
+        lastAPressed = aPressed;
+    }
+
+    void TogglePanel()
+    {
+        if (missionPanel == null) return;
+
+        bool isActive = missionPanel.activeSelf;
+        missionPanel.SetActive(!isActive);
+        if (isActive)
+        {
+            PlayerEventSystem.Instance.RecordClose("任务面板");
+        }
+        else
+        {
+            PlayerEventSystem.Instance.RecordOpen("任务面板");
+        }
+        
+        Debug.Log(isActive ? "关闭面板" : "打开面板");
     }
 
     // 更新面包任务状态

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static PlayerEventSystem;
 
+[System.Serializable]
 class PlayerEventListWrapper
 {
     public List<PlayerEvent> StandardSequence;
@@ -32,8 +33,18 @@ public class TaskDefinition : MonoBehaviour
 
         foreach (var e in wrapper.StandardSequence)
         {
-            e.Time = 0f;                 // 统一补时间
-            e.Context ??= "";            // 防 null
+            // 显式把 string -> enum
+            // 因为JsonUtility无法直接读取对应enum值，只能读取string然后我们自己对应
+            if (!System.Enum.TryParse(e.StringType, out e.Type))
+            {
+                Debug.LogError($"Unknown EventType string: {e.StringType}");
+                continue;
+            }
+            Debug.Log($"RAW Type = {e.StringType}, Target = {e.Target}");
+            // 统一默认时间
+            e.Time = 0f;                 
+            // 防 null
+            e.Context ??= "";            
             StandardSequence.Add(e);
         }
     }

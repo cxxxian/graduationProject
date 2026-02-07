@@ -31,6 +31,11 @@ public class PlayerEventSystem : MonoBehaviour
     [System.Serializable]
     public class PlayerEvent
     {
+        // JSON 里读进来的原始字符串
+        public string StringType;
+
+        // 程序真正用的枚举（不参与 JSON）
+        [System.NonSerialized]
         public EventType Type;
         public string Target;
         public float Time;
@@ -101,6 +106,29 @@ public class PlayerEventSystem : MonoBehaviour
         }
 
         Debug.Log("===== Player Event Logs End =====");
+    }
+
+    public void PrintStandardAllLogs(List<PlayerEvent> StandardSequence)
+    {
+        Debug.Log("===== Standard Event Logs Start =====");
+
+        foreach (var e in StandardSequence)
+        {
+            if (e.Type == EventType.Grab || e.Type == EventType.Drop)
+            {
+                Debug.Log($"[PlayerEvent] {e.Type}  Target:{e.Target}  Time:{e.Time}");
+            }
+            else if (e.Type == EventType.EnterZone || e.Type == EventType.ExitZone)
+            {
+                Debug.Log($"[PlayerEvent] {e.Type}  Target:{e.Target}  To Zone:{e.Context}  Time:{e.Time}");
+            }
+            else if (e.Type == EventType.Open || e.Type == EventType.Close)
+            {
+                Debug.Log($"[PlayerEvent] {e.Type}  Target:{e.Target}  Time:{e.Time}");
+            }
+        }
+
+        Debug.Log("===== Standard Event Logs End =====");
     }
 
 

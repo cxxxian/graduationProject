@@ -1,67 +1,67 @@
 {
   "StandardSequence": [
     {
-      "Type": "Grab",
+      "StringType": "Grab",
       "Target": "Bread"
     },
     {
-      "Type": "EnterZone",
+      "StringType": "EnterZone",
       "Target": "Bread",
       "Context": "Plate"
     },
     {
-      "Type": "Drop",
+      "StringType": "Drop",
       "Target": "Bread"
     },
 
     {
-      "Type": "Grab",
+      "StringType": "Grab",
       "Target": "Bread"
     },
     {
-      "Type": "EnterZone",
+      "StringType": "EnterZone",
       "Target": "Bread",
       "Context": "Plate"
     },
     {
-      "Type": "Drop",
+      "StringType": "Drop",
       "Target": "Bread"
     },
 
     {
-      "Type": "Grab",
+      "StringType": "Grab",
       "Target": "Cup"
     },
     {
-      "Type": "Grab",
+      "StringType": "Grab",
       "Target": "CoffeeCup"
     },
 
     {
-      "Type": "Grab",
+      "StringType": "Grab",
       "Target": "Banana"
     },
     {
-      "Type": "EnterZone",
+      "StringType": "EnterZone",
       "Target": "Banana",
       "Context": "Table"
     },
     {
-      "Type": "Drop",
+      "StringType": "Drop",
       "Target": "Banana"
     },
 
     {
-      "Type": "Grab",
+      "StringType": "Grab",
       "Target": "Banana"
     },
     {
-      "Type": "EnterZone",
+      "StringType": "EnterZone",
       "Target": "Banana",
       "Context": "Table"
     },
     {
-      "Type": "Drop",
+      "StringType": "Drop",
       "Target": "Banana"
     }
   ]

@@ -16,6 +16,7 @@ public class FruitTask : MonoBehaviour, ITask
 
     // 延迟确认中的面包
     private Dictionary<GameObject, Coroutine> pendingChecks = new Dictionary<GameObject, Coroutine>();
+    private Dictionary<GameObject, Coroutine> pendingExitChecks = new();
 
     // 延迟时间（VR 抗抖）
     [SerializeField]
@@ -26,31 +27,6 @@ public class FruitTask : MonoBehaviour, ITask
         IsTaskComplete = false;
         bananaIndex = 0;
     }
-
-
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    if (other.CompareTag("Banana") && !bananaInTable.Contains(other.gameObject))
-    //    {
-    //        // 记录香蕉进入桌子区域
-    //        PlayerEventSystem.Instance.RecordEnterZone(other.transform.parent.gameObject, "Table");
-
-    //        bananaIndex++;
-    //        bananaInTable.Add(other.gameObject);
-    //        Debug.Log($"Banana 数量{bananaInTable.Count}" + $", {bananaIndex}");
-    //        if (bananaInTable.Count >= goalCount)
-    //        {
-    //            IsTaskComplete = true;
-    //            Debug.Log("香蕉任务完成");
-    //        }
-    //    }
-    //    else if (other.CompareTag("Apple") && !appleInTable.Contains(other.gameObject))
-    //    {
-    //        appleIndex++;
-    //        appleInTable.Add(other.gameObject);
-    //        Debug.Log($"Apple 数量{appleInTable.Count}" + $", {appleIndex}");
-    //    }
-    //}
 
     private void OnTriggerEnter(Collider other)
     {
@@ -70,29 +46,14 @@ public class FruitTask : MonoBehaviour, ITask
         pendingChecks[obj] = StartCoroutine(ConfirmEnter(obj));
     }
 
-    //private void OnTriggerExit(Collider other)
-    //{
-    //    if (other.CompareTag("Banana") && bananaInTable.Contains(other.gameObject))
-    //    {
-    //        // 记录香蕉离开桌子区域
-    //        PlayerEventSystem.Instance.RecordExitZone(other.transform.parent.gameObject, "Table");
-
-    //        bananaIndex++;
-    //        bananaInTable.Remove(other.gameObject);
-    //        Debug.Log($"Banana 数量{bananaInTable.Count}" + $", {bananaIndex}");
-    //    }else if (other.CompareTag("Apple") && appleInTable.Contains(other.gameObject))
-    //    {
-    //        appleIndex++;
-    //        appleInTable.Remove(other.gameObject);
-    //        Debug.Log($"Apple 数量{appleInTable.Count}" + $", {appleIndex}");
-    //    }
-    //}
 
     private void OnTriggerExit(Collider other)
     {
         GameObject obj = other.gameObject;
 
-        if (!other.CompareTag("Banana") && !other.CompareTag("Apple"))
+        if (!other.CompareTag("Banana"))
+            return;
+        if (!other.CompareTag("Apple"))
             return;
 
         // 如果还在确认中,即代表抖动，直接取消这次进入尝试
@@ -121,7 +82,6 @@ public class FruitTask : MonoBehaviour, ITask
             Debug.Log($"Apple 数量 {appleInTable.Count}");
         }
     }
-
 
     IEnumerator ConfirmEnter(GameObject obj)
     {

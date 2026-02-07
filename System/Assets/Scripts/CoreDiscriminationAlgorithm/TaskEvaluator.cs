@@ -1,106 +1,101 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 public class TaskEvaluator : MonoBehaviour
 {
     public TaskDefinition taskDefinition;
 
-    // ¶ÔÆë½á¹û
+    // å¯¹é½ç»“æœ
     public List<EventMatchResult> MatchResults { get; private set; } = new List<EventMatchResult>();
 
-    // ´íÎóÁĞ±í
-    // ±ê×¼²½ÖèÖĞ±»ÒÅÂ©µÄÊÂ¼ş
+    // é”™è¯¯åˆ—è¡¨
+    // æ ‡å‡†æ­¥éª¤ä¸­è¢«é—æ¼çš„äº‹ä»¶
     public List<PlayerEventSystem.PlayerEvent> OmissionErrors { get; private set; } = new List<PlayerEventSystem.PlayerEvent>();
 
-    // Êµ¼Ê²Ù×÷ÓĞÎÊÌâ£¬ÀıÈçË³Ğò´íÎó»ò¶àÓà²Ù×÷
+    // å®é™…æ“ä½œæœ‰é—®é¢˜ï¼Œä¾‹å¦‚é¡ºåºé”™è¯¯æˆ–å¤šä½™æ“ä½œ
     public List<EventMatchResult> CommissionErrors { get; private set; } = new List<EventMatchResult>();
 
-    // ²Ù×÷ÉÏµÄĞ¡´íÎó£¬ÀıÈçÖØ¸´×¥È¡¡¢·´¸´³¢ÊÔ»ò²Ù×÷²»ÎÈ¶¨
+    // æ“ä½œä¸Šçš„å°é”™è¯¯ï¼Œä¾‹å¦‚é‡å¤æŠ“å–ã€åå¤å°è¯•æˆ–æ“ä½œä¸ç¨³å®š
     public List<EventMatchResult> MotorErrors { get; private set; } = new List<EventMatchResult>();
 
-    // ÆÀ¹ÀÈë¿Ú
+    // è¯„ä¼°å…¥å£
     public void Evaluate()
     {
-        // ´Ó PlayerEventSystem »ñÈ¡Íæ¼ÒÖ´ĞĞµÄËùÓĞÊÂ¼ş
-        List<PlayerEventSystem.PlayerEvent> actualSequence = PlayerEventSystem.Instance.GetAllEvents();
-        // ´Ó TaskDefinition »ñÈ¡±ê×¼Á÷³Ì
-        List<PlayerEventSystem.PlayerEvent> standardSequence = taskDefinition.StandardSequence;
+        var actualSequence = PlayerEventSystem.Instance.GetAllEvents();
+        var standardSequence = taskDefinition.StandardSequence;
 
         MatchResults.Clear();
         OmissionErrors.Clear();
         CommissionErrors.Clear();
         MotorErrors.Clear();
 
-        // ²¼¶ûÊı×é±ê¼Ç±ê×¼ÊÂ¼şÊÇ·ñ±»Æ¥Åä
-        // ÓÃÓÚ ÒÅÂ©´íÎó£¨Omission£©
+        PlayerEventSystem.Instance.PrintStandardAllLogs(taskDefinition.StandardSequence);
+
         bool[] standardMatched = new bool[standardSequence.Count];
 
-        // ¿ìÂıÖ¸ÕëµÄÂıÖ¸Õë£¬ÓÃÓÚË³ĞòÆ¥Åä
-        int standardIndex = 0;
-        int trueStandardIndex = 0;
-
-        // Ñ­»·Ã¿ÌõÊµ¼ÊÊÂ¼ş
-        // ÄÚ²¿ while Ñ­»· ¡ú ÂıÖ¸ÕëÆ¥Åä±ê×¼ÊÂ¼ş
+        // ===== 1ï¸âƒ£ äº‹ä»¶å¯¹é½ï¼ˆä¸æ¨è¿›æ ‡å‡†æŒ‡é’ˆï¼‰=====
         foreach (var actual in actualSequence)
         {
-            // Èç¹û×îÖÕÃ»Æ¥Åä ¡ú matchedIndex = -1
             int matchedIndex = -1;
-            // Ã¿´Î´ÓÒÑÆ¥ÅäµÄÏÂÒ»¸öĞĞÎª±ê×¼¿ªÊ¼Æ¥Åä
-            standardIndex = trueStandardIndex;
 
-            // ¿ìÂıÖ¸ÕëÆ¥Åä
-            while (standardIndex < standardSequence.Count)
+            // åœ¨æ‰€æœ‰â€œå°šæœªåŒ¹é…çš„æ ‡å‡†æ­¥éª¤â€ä¸­å¯»æ‰¾
+            for (int i = 0; i < standardSequence.Count; i++)
             {
-                
-                if (EventMatch(actual, standardSequence[standardIndex]))
+                if (standardMatched[i]) continue;
+
+                if (EventMatch(actual, standardSequence[i]))
                 {
-                    // Æ¥Åä³É¹¦
-                    // ¼ÇÂ¼ matchedIndex
-                    matchedIndex = standardIndex;
-                    Debug.Log("Æ¥Åä³É¹¦µÄĞĞÎª£º" + $"[PlayerEvent] {actual.Type}  Target:{actual.Target}  Time:{actual.Time}");
-                    // ½«¶ÔÓ¦±ê×¼ÊÂ¼ş±ê¼ÇÎªÒÑÆ¥Åä
-                    standardMatched[standardIndex] = true;
-                    standardIndex++;
-                    trueStandardIndex = standardIndex;
+                    Debug.Log("çœŸå®äº‹ä»¶"+ $"[PlayerEvent] {actual.Type}  Target:{actual.Target}  Time:{actual.Time}");
+                    Debug.Log("å¯¹åº”æ ‡å‡†äº‹ä»¶"+ $"[PlayerEvent] {standardSequence[i].Type}  Target:{standardSequence[i].Target}");
+                    matchedIndex = i;
+                    standardMatched[i] = true;
                     break;
                 }
-                else
-                {
-                    // Æ¥ÅäÊ§°Ü
-                    Debug.Log("Æ¥ÅäÊ§°ÜµÄĞĞÎª£º" + $"[PlayerEvent] {actual.Type}  Target:{actual.Target}  Time:{actual.Time}");
-                    Debug.Log("µ±Ç°µÄ±ê×¼ĞĞÎªÎª£º" + $"[PlayerEvent] {standardSequence[standardIndex].Type}  Target:{standardSequence[standardIndex].Target}  Time:{standardSequence[standardIndex].Time}");
-                    // standardIndex Ç°½ø£¬¼ÌĞø³¢ÊÔÆ¥ÅäºóÃæµÄ±ê×¼ÊÂ¼ş
-                    standardIndex++;
-                }
             }
-            // Ã¿ÌõÊµ¼ÊÊÂ¼ş¶¼Éú³ÉÒ»Ìõ¶ÔÓ¦½á¹û£¬ÓÃÓÚ´íÎó¼ì²â
+
             MatchResults.Add(new EventMatchResult(actual, matchedIndex));
+        }
 
-            // Commission / Motor ´íÎó³õ²½ÅĞ¶Ï
-            if (matchedIndex == -1)
+        // ===== 2ï¸âƒ£ é¡ºåº & Commission é”™è¯¯åˆ¤æ–­ =====
+        int lastMatchedStandard = -1;
+
+        foreach (var r in MatchResults)
+        {
+            if (r.MatchedStandardIndex == -1)
             {
-                // Ã»Æ¥Åäµ½ÈÎºÎ±ê×¼²½Öè ¡ú ¶àÓà²Ù×÷»ò´íÎóË³Ğò
-                CommissionErrors.Add(new EventMatchResult(actual, -1));
-            }
-            else if (standardIndex > matchedIndex + 1)
-            {
-                // Æ¥Åäµ½µÄ±ê×¼²½ÖèÖ®Ç°±»Ìø¹ı ¡ú Ë³ĞòÎÊÌâ£¬Ò²Ëã Commission
-                CommissionErrors.Add(new EventMatchResult(actual, matchedIndex));
+                // å®Œå…¨ä¸åœ¨æ ‡å‡†ä¸­çš„æ“ä½œ
+                CommissionErrors.Add(r);
+                continue;
             }
 
-            // Motor ´íÎóÊ¾Àı£ºÖØ¸´×¥È¡»ò¶àÓà¶¯×÷
-            // ÕâÀï¼òµ¥Ê¾Àı£ºÍ¬Ò»¶ÔÏóÁ¬Ğø Grab/Drop ÊÓÎª Motor
-            if (MatchResults.Count >= 2)
+            if (r.MatchedStandardIndex < lastMatchedStandard)
             {
-                var prev = MatchResults[MatchResults.Count - 2];
-                if (actual.Type == PlayerEventSystem.EventType.Grab && prev.ActualEvent.Target == actual.Target && prev.ActualEvent.Type == PlayerEventSystem.EventType.Grab)
-                {
-                    MotorErrors.Add(new EventMatchResult(actual, matchedIndex));
-                }
+                // å›é€€ / æå‰æ“ä½œ â†’ é¡ºåºé”™è¯¯
+                CommissionErrors.Add(r);
+            }
+
+            lastMatchedStandard = r.MatchedStandardIndex;
+        }
+
+        // ===== 3ï¸âƒ£ Motor é”™è¯¯ï¼ˆé‡å¤ / ä¸ç¨³å®šï¼‰=====
+        Dictionary<(PlayerEventSystem.EventType, string), int> repeatCounter = new();
+
+        foreach (var r in MatchResults)
+        {
+            var key = (r.ActualEvent.Type, r.ActualEvent.Target);
+
+            if (!repeatCounter.ContainsKey(key))
+                repeatCounter[key] = 0;
+
+            repeatCounter[key]++;
+
+            if (repeatCounter[key] >= 3)
+            {
+                MotorErrors.Add(r);
             }
         }
 
-        // ¼ì²éÒÅÂ©±ê×¼ÊÂ¼ş
+        // ===== 4ï¸âƒ£ Omission é”™è¯¯ =====
         for (int i = 0; i < standardSequence.Count; i++)
         {
             if (!standardMatched[i])
@@ -109,25 +104,21 @@ public class TaskEvaluator : MonoBehaviour
             }
         }
 
-        // Êä³öÍ³¼Æ
+        // ===== Debug è¾“å‡º =====
         Debug.Log($"[Evaluation] Matched {standardSequence.Count - OmissionErrors.Count} / {standardSequence.Count}");
+
         foreach (var e in OmissionErrors)
-        {
-            Debug.Log($"[Omission Error] Missing {e.Type} {e.Target}");
-        }
+            Debug.Log($"[é—æ¼é”™è¯¯Omission Error] Missing {e.Type} {e.Target}");
 
         foreach (var e in CommissionErrors)
-        {
-            Debug.Log($"[Commission Error] Extra or wrong order: {e.ActualEvent.Type} {e.ActualEvent.Target}");
-        }
+            Debug.Log($"[æ‰§è¡Œé”™è¯¯Commission Error] Extra or wrong order: {e.ActualEvent.Type} {e.ActualEvent.Target}");
 
         foreach (var e in MotorErrors)
-        {
-            Debug.Log($"[Motor Error] Repeated or unstable action: {e.ActualEvent.Type} {e.ActualEvent.Target}");
-        }
+            Debug.Log($"[è¿åŠ¨é”™è¯¯Motor Error] Repeated or unstable action: {e.ActualEvent.Type} {e.ActualEvent.Target}");
     }
 
-    // ºËĞÄÆ¥ÅäÂß¼­
+
+    // æ ¸å¿ƒåŒ¹é…é€»è¾‘
     private bool EventMatch(PlayerEventSystem.PlayerEvent actual, PlayerEventSystem.PlayerEvent standard)
     {
         if (actual.Type != standard.Type)

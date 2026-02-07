@@ -1,0 +1,68 @@
+{
+  "StandardSequence": [
+    {
+      "Type": "Grab",
+      "Target": "Bread"
+    },
+    {
+      "Type": "EnterZone",
+      "Target": "Bread",
+      "Context": "Plate"
+    },
+    {
+      "Type": "Drop",
+      "Target": "Bread"
+    },
+
+    {
+      "Type": "Grab",
+      "Target": "Bread"
+    },
+    {
+      "Type": "EnterZone",
+      "Target": "Bread",
+      "Context": "Plate"
+    },
+    {
+      "Type": "Drop",
+      "Target": "Bread"
+    },
+
+    {
+      "Type": "Grab",
+      "Target": "Cup"
+    },
+    {
+      "Type": "Grab",
+      "Target": "CoffeeCup"
+    },
+
+    {
+      "Type": "Grab",
+      "Target": "Banana"
+    },
+    {
+      "Type": "EnterZone",
+      "Target": "Banana",
+      "Context": "Table"
+    },
+    {
+      "Type": "Drop",
+      "Target": "Banana"
+    },
+
+    {
+      "Type": "Grab",
+      "Target": "Banana"
+    },
+    {
+      "Type": "EnterZone",
+      "Target": "Banana",
+      "Context": "Table"
+    },
+    {
+      "Type": "Drop",
+      "Target": "Banana"
+    }
+  ]
+}

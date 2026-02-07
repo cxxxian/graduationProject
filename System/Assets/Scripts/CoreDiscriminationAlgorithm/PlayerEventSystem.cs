@@ -28,6 +28,7 @@ public class PlayerEventSystem : MonoBehaviour
     }
 
     // 单条事件结构体
+    [System.Serializable]
     public class PlayerEvent
     {
         public EventType Type;

@@ -19,7 +19,7 @@ public class FruitTask : MonoBehaviour, ITask
 
     // 延迟时间（VR 抗抖）
     [SerializeField]
-    private float confirmDelay = 0.3f;
+    private float confirmDelay = 1.0f;
 
     public void InitializeTask()
     {

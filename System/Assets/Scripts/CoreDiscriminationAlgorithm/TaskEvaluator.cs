@@ -18,6 +18,11 @@ public class TaskEvaluator : MonoBehaviour
     // 操作上的小错误，例如重复抓取、反复尝试或操作不稳定
     public List<EventMatchResult> MotorErrors { get; private set; } = new List<EventMatchResult>();
 
+    public float ITMN;
+    public bool FirstTrueAction;
+    public float PSMM;
+    public float BE;
+
     // 评估入口
     public void Evaluate()
     {
@@ -28,12 +33,16 @@ public class TaskEvaluator : MonoBehaviour
         OmissionErrors.Clear();
         CommissionErrors.Clear();
         MotorErrors.Clear();
+        ITMN = 0;
+        FirstTrueAction = true;
+        PSMM = 0;
+        BE = 0;
 
         PlayerEventSystem.Instance.PrintStandardAllLogs(taskDefinition.StandardSequence);
 
         bool[] standardMatched = new bool[standardSequence.Count];
 
-        // ===== 1️⃣ 事件对齐（不推进标准指针）=====
+        // ===== 1️⃣ 事件对齐 =====
         foreach (var actual in actualSequence)
         {
             int matchedIndex = -1;
@@ -45,6 +54,11 @@ public class TaskEvaluator : MonoBehaviour
 
                 if (EventMatch(actual, standardSequence[i]))
                 {
+                    if (FirstTrueAction)
+                    {
+                        ITMN = actual.Time;
+                        FirstTrueAction = false;
+                    }
                     Debug.Log("真实事件"+ $"[PlayerEvent] {actual.Type}  Target:{actual.Target}  Time:{actual.Time}");
                     Debug.Log("对应标准事件"+ $"[PlayerEvent] {standardSequence[i].Type}  Target:{standardSequence[i].Target}");
                     matchedIndex = i;
@@ -59,6 +73,7 @@ public class TaskEvaluator : MonoBehaviour
         // ===== 2️⃣ 顺序 & Commission 错误判断 =====
         int lastMatchedStandard = -1;
 
+        /**
         foreach (var r in MatchResults)
         {
             if (r.MatchedStandardIndex == -1)
@@ -71,6 +86,39 @@ public class TaskEvaluator : MonoBehaviour
             if (r.MatchedStandardIndex < lastMatchedStandard)
             {
                 // 回退 / 提前操作 → 顺序错误
+                CommissionErrors.Add(r);
+            }
+
+            lastMatchedStandard = r.MatchedStandardIndex;
+        }
+        **/
+        // 记录做过的无效操作
+        HashSet<(PlayerEventSystem.EventType, string)> invalidVisited = new();
+
+        foreach (var r in MatchResults)
+        {
+            string normalizedTarget = NormalizeTarget(r.ActualEvent.Target);
+            var key = (r.ActualEvent.Type, normalizedTarget);
+
+            if (r.MatchedStandardIndex == -1)
+            {
+                // 第一次遇到无效操作 → 记录
+                if (!invalidVisited.Contains(key))
+                {
+                    invalidVisited.Add(key);
+                }
+                else
+                {
+                    // 已经访问过的无效对象 → BE++
+                    BE++;
+                }
+
+                CommissionErrors.Add(r);
+                continue;
+            }
+
+            if (r.MatchedStandardIndex < lastMatchedStandard)
+            {
                 CommissionErrors.Add(r);
             }
 
@@ -115,6 +163,8 @@ public class TaskEvaluator : MonoBehaviour
 
         foreach (var e in MotorErrors)
             Debug.Log($"[运动错误Motor Error] Repeated or unstable action: {e.ActualEvent.Type} {e.ActualEvent.Target}");
+
+        PSMM = (float)standardSequence.Count / (float)actualSequence.Count;
     }
 
 
@@ -149,5 +199,44 @@ public class TaskEvaluator : MonoBehaviour
             return false;
 
         return actual.ToLower().Contains(standard.ToLower());
+    }
+
+    // 收集结果总结
+    public TaskResultData GetResultSummary()
+    {
+        TaskResultData result = new TaskResultData();
+
+        result.SceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        result.MatchedCount = MatchResults.Count - CommissionErrors.Count;
+        result.OmissionCount = OmissionErrors.Count;
+        result.CommissionCount = CommissionErrors.Count;
+        result.MotorCount = MotorErrors.Count;
+
+        int totalStandard = taskDefinition.StandardSequence.Count;
+        result.CompletionRate = (float)(totalStandard - OmissionErrors.Count) / totalStandard;
+
+        // 保存真实 logs
+        result.RawLogs = new List<PlayerEventSystem.PlayerEvent>(
+            PlayerEventSystem.Instance.GetAllEvents()
+        );
+
+        result.ITMN = ITMN;
+        result.PSMM = PSMM;
+        result.BE = BE;
+
+        return result;
+    }
+
+    //工具函数，用来屏蔽物体后面的数字编号
+    string NormalizeTarget(string target)
+    {
+        int i = target.Length - 1;
+
+        while (i >= 0 && char.IsDigit(target[i]))
+        {
+            i--;
+        }
+
+        return target.Substring(0, i + 1);
     }
 }

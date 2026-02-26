@@ -161,6 +161,27 @@ public class SceneTaskManager : MonoBehaviour
         }
         Debug.Log("任务完成");
         PlayerEventSystem.Instance.PrintAllLogs();
+
+        // 进行行为判定
         evaluator.Evaluate();
+        // 收集该场景的总结
+        var result = evaluator.GetResultSummary();
+        TaskSessionManager.Instance.AddTaskResult(result);
+        // 清空准备进入下一个场景
+        PlayerEventSystem.Instance.Clear();
+
+        // 输出存储的数据结果
+        foreach (var r in TaskSessionManager.Instance.AllTaskResults)
+        {
+            Debug.Log($"Scene: {r.SceneName}");
+            Debug.Log($"Completion: {r.CompletionRate}");
+            Debug.Log($"Omission: {r.OmissionCount}");
+            Debug.Log($"Commission: {r.CommissionCount}");
+            Debug.Log($"Motor: {r.MotorCount}");
+            Debug.Log($"ITMN: {r.ITMN}");
+            Debug.Log($"PSMM: {r.PSMM}");
+            Debug.Log($"BE: {r.BE}");
+        }
     }
+
 }

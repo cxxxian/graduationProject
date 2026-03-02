@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using static PlayerEventSystem;
 
 public class TaskEvaluator : MonoBehaviour
 {
@@ -23,11 +24,12 @@ public class TaskEvaluator : MonoBehaviour
     public float PSMM;
     public float BE;
 
-    // 评估入口
-    public void Evaluate()
+    // 厨房任务评估入口
+    public void EvaluateKitchen()
     {
         var actualSequence = PlayerEventSystem.Instance.GetAllEvents();
         var standardSequence = taskDefinition.StandardSequence;
+
 
         MatchResults.Clear();
         OmissionErrors.Clear();
@@ -167,7 +169,6 @@ public class TaskEvaluator : MonoBehaviour
         PSMM = (float)standardSequence.Count / (float)actualSequence.Count;
     }
 
-
     // 核心匹配逻辑
     private bool EventMatch(PlayerEventSystem.PlayerEvent actual, PlayerEventSystem.PlayerEvent standard)
     {
@@ -201,6 +202,172 @@ public class TaskEvaluator : MonoBehaviour
         return actual.ToLower().Contains(standard.ToLower());
     }
 
+    public class ShoppingState
+    {
+        public int milkNormalCount = 0;
+        public int milkChocolateCount = 0;
+
+        public int biscuitNormalCount = 0;
+        public int biscuitWithNutCount = 0;
+
+        public int pencilHBCount = 0;
+        public int pencilOtherCount = 0;
+
+        public int yogurtStrawberryCount = 0;
+
+        public int totalPrice = 0;
+    }
+    public void EvaluateShopping()
+    {
+        var logs = PlayerEventSystem.Instance.GetAllEvents();
+
+        OmissionErrors.Clear();
+        CommissionErrors.Clear();
+        MotorErrors.Clear();
+        ITMN = 0;
+        FirstTrueAction = true;
+        PSMM = 0;
+        BE = 0;
+
+        ShoppingState state = new ShoppingState();
+
+        // 用于 BE
+        HashSet<string> invalidVisited = new HashSet<string>();
+
+        // 解析日志，统计购物状态
+        foreach (var e in logs)
+        {
+            if (e.Type != PlayerEventSystem.EventType.EnterZone)
+                continue;
+
+            if (FirstTrueAction)
+            {
+                ITMN = e.Time;
+                FirstTrueAction = false;
+            }
+
+            string target = NormalizeTarget(e.Target);
+            Debug.Log("当前判断对象" + target);
+            switch (target)
+            {
+                case "NormalMilk":
+                    state.milkNormalCount++;
+                    state.totalPrice += 8;
+                    break;
+
+                case "ChocolateMilk":
+                    state.milkChocolateCount++;
+                    state.totalPrice += 8;
+                    HandleInvalid(target, invalidVisited);
+                    break;
+
+                case "NormalBiscuit":
+                    state.biscuitNormalCount++;
+                    state.totalPrice += 15;
+                    break;
+
+                case "NutsBiscuit":
+                    state.biscuitWithNutCount++;
+                    state.totalPrice += 15;
+                    HandleInvalid(target, invalidVisited);
+                    break;
+
+                case "Pencil":
+                    state.pencilHBCount++;
+                    state.totalPrice += 2;
+                    break;
+
+                case "RedPen":
+                    state.pencilOtherCount++;
+                    state.totalPrice += 3;
+                    HandleInvalid(target, invalidVisited);
+                    break;
+                case "BlackPen":
+                    state.pencilOtherCount++;
+                    state.totalPrice += 3;
+                    HandleInvalid(target, invalidVisited);
+                    break;
+
+                case "Yogurt":
+                    state.yogurtStrawberryCount++;
+                    state.totalPrice += 10;
+                    break;
+            }
+        }
+
+        // 规则验证
+        // 基础任务
+        if (state.milkNormalCount < 2)
+        {
+            //OmissionErrors.Add("牛奶数量不足");
+            OmissionErrors.Add(new PlayerEvent(type: PlayerEventSystem.EventType.Grab, target: "", currentTime: 0f, context: "牛奶数量不足"));
+            Debug.Log("牛奶数量不足");
+        }
+            
+        if (state.biscuitNormalCount < 1 && state.yogurtStrawberryCount <= 0)
+        {
+            OmissionErrors.Add(new PlayerEvent(type: PlayerEventSystem.EventType.Grab, target: "", currentTime: 0f, context: "无坚果饼干缺失"));
+            Debug.Log("无坚果饼干缺失");
+        }
+
+        if (state.pencilHBCount < 3)
+        {
+            OmissionErrors.Add(new PlayerEvent(type: PlayerEventSystem.EventType.Grab, target: "", currentTime: 0f, context: "HB铅笔不足"));
+            Debug.Log("HB铅笔不足");
+        }
+            
+        // --- 类型错误 ---
+        if (state.milkChocolateCount > 0)
+        {
+            CommissionErrors.Add(new EventMatchResult(new PlayerEvent(type: PlayerEventSystem.EventType.Grab, target: "", currentTime: 0f, context: "买错牛奶类型"), 1));
+            Debug.Log("买错牛奶类型");
+        }
+
+        if (state.biscuitWithNutCount > 0)
+        {
+            CommissionErrors.Add(new EventMatchResult(new PlayerEvent(type: PlayerEventSystem.EventType.Grab, target: "", currentTime: 0f, context: "买了有坚果饼干"), 1));
+            Debug.Log("买了有坚果饼干");
+
+        }
+
+        if (state.pencilOtherCount > 0)
+        {
+            CommissionErrors.Add(new EventMatchResult(new PlayerEvent(type: PlayerEventSystem.EventType.Grab, target: "", currentTime: 0f, context: "买错铅笔型号"), 1));
+            Debug.Log("买错铅笔型号");
+        }
+
+        // --- 预算错误 ---
+        if (state.totalPrice > 40)
+        {
+            CommissionErrors.Add(new EventMatchResult(new PlayerEvent(type: PlayerEventSystem.EventType.Grab, target: "", currentTime: 0f, context: "预算超支"), 1));
+            Debug.Log("预算超支");
+
+        }
+
+        // --- 临时规则 ---
+        if (state.yogurtStrawberryCount > 0 &&
+            state.biscuitNormalCount != 0)
+        {
+            CommissionErrors.Add(new EventMatchResult(new PlayerEvent(type: PlayerEventSystem.EventType.Grab, target: "", currentTime: 0f, context: "未扣减饼干预算"), 1));
+            Debug.Log("未扣减饼干预算");
+        }
+
+        Debug.Log($"Omission: {OmissionErrors.Count}");
+        Debug.Log($"Commission: {CommissionErrors.Count}");
+        Debug.Log($"BE: {BE}");
+    }
+    private void HandleInvalid(string target, HashSet<string> invalidVisited)
+    {
+        if (!invalidVisited.Contains(target))
+        {
+            invalidVisited.Add(target);
+        }
+        else
+        {
+            BE++;
+        }
+    }
+
     // 收集结果总结
     public TaskResultData GetResultSummary()
     {
@@ -212,7 +379,11 @@ public class TaskEvaluator : MonoBehaviour
         result.CommissionCount = CommissionErrors.Count;
         result.MotorCount = MotorErrors.Count;
 
-        int totalStandard = taskDefinition.StandardSequence.Count;
+        int totalStandard = 1;
+        if (taskDefinition != null) {
+            totalStandard = taskDefinition.StandardSequence.Count;
+        }
+        
         result.CompletionRate = (float)(totalStandard - OmissionErrors.Count) / totalStandard;
 
         // 保存真实 logs

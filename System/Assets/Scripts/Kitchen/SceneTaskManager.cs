@@ -163,7 +163,7 @@ public class SceneTaskManager : MonoBehaviour
         PlayerEventSystem.Instance.PrintAllLogs();
 
         // 进行行为判定
-        evaluator.Evaluate();
+        evaluator.EvaluateKitchen();
         // 收集该场景的总结
         var result = evaluator.GetResultSummary();
         TaskSessionManager.Instance.AddTaskResult(result);

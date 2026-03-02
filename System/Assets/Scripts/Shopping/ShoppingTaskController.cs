@@ -25,6 +25,9 @@ public class ShoppingTaskController : MonoBehaviour
     // 任务完成结算文字，返回给ShoppingCart调用
     public string taskCompletedText;
 
+    [Header("任务完成检测")]
+    public TaskEvaluator evaluator;
+
     // 当物体加入篮子调用
     public void OnItemAdded(ItemComponent itemComp)
     {
@@ -147,6 +150,29 @@ public class ShoppingTaskController : MonoBehaviour
         {
             taskCompletedText = "任务未完成，请检查条件。";
             Debug.Log("任务未完成，请检查条件。");
+        }
+
+        PlayerEventSystem.Instance.PrintAllLogs();
+
+        // 进行行为判定
+        evaluator.EvaluateShopping();
+        // 收集该场景的总结
+        var result = evaluator.GetResultSummary();
+        TaskSessionManager.Instance.AddTaskResult(result);
+        // 清空准备进入下一个场景
+        PlayerEventSystem.Instance.Clear();
+
+        // 输出存储的数据结果
+        foreach (var r in TaskSessionManager.Instance.AllTaskResults)
+        {
+            Debug.Log($"Scene: {r.SceneName}");
+            Debug.Log($"Completion: {r.CompletionRate}");
+            Debug.Log($"Omission: {r.OmissionCount}");
+            Debug.Log($"Commission: {r.CommissionCount}");
+            Debug.Log($"Motor: {r.MotorCount}");
+            Debug.Log($"ITMN: {r.ITMN}");
+            Debug.Log($"PSMM: {r.PSMM}");
+            Debug.Log($"BE: {r.BE}");
         }
     }
 

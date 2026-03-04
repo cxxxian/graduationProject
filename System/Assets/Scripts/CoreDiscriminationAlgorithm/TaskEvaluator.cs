@@ -19,6 +19,9 @@ public class TaskEvaluator : MonoBehaviour
     // 操作上的小错误，例如重复抓取、反复尝试或操作不稳定
     public List<EventMatchResult> MotorErrors { get; private set; } = new List<EventMatchResult>();
 
+    // 手工任务的完成stage
+    //public LanternStickAssembler lanternStage;
+
     public float ITMN;
     public bool FirstTrueAction;
     public float PSMM;
@@ -128,21 +131,28 @@ public class TaskEvaluator : MonoBehaviour
         }
 
         // ===== 3️⃣ Motor 错误（重复 / 不稳定）=====
-        Dictionary<(PlayerEventSystem.EventType, string), int> repeatCounter = new();
+        var lastKey = default((PlayerEventSystem.EventType, string));
+        int consecutiveCount = 0;
 
         foreach (var r in MatchResults)
         {
             var key = (r.ActualEvent.Type, r.ActualEvent.Target);
 
-            if (!repeatCounter.ContainsKey(key))
-                repeatCounter[key] = 0;
+            if (key.Equals(lastKey))
+            {
+                consecutiveCount++;
+            }
+            else
+            {
+                consecutiveCount = 1;
+            }
 
-            repeatCounter[key]++;
-
-            if (repeatCounter[key] >= 3)
+            if (consecutiveCount >= 3)
             {
                 MotorErrors.Add(r);
             }
+
+            lastKey = key;
         }
 
         // ===== 4️⃣ Omission 错误 =====
@@ -217,6 +227,8 @@ public class TaskEvaluator : MonoBehaviour
 
         public int totalPrice = 0;
     }
+
+    // 购物任务评估入口
     public void EvaluateShopping()
     {
         var logs = PlayerEventSystem.Instance.GetAllEvents();
@@ -355,6 +367,129 @@ public class TaskEvaluator : MonoBehaviour
         Debug.Log($"Omission: {OmissionErrors.Count}");
         Debug.Log($"Commission: {CommissionErrors.Count}");
         Debug.Log($"BE: {BE}");
+    }
+
+    // 手工任务评估入口
+    public void EvaluateHandwork()
+    {
+        var actualSequence = PlayerEventSystem.Instance.GetAllEvents();
+        var standardSequence = taskDefinition.StandardSequence;
+
+        MatchResults.Clear();
+        //OmissionErrors.Clear();
+        CommissionErrors.Clear();
+        MotorErrors.Clear();
+
+        ITMN = 0;
+        FirstTrueAction = true;
+        PSMM = 0;
+        BE = 0;
+
+        int currentStandardIndex = 0;
+
+        HashSet<(PlayerEventSystem.EventType, string)> invalidVisited = new();
+        Dictionary<(PlayerEventSystem.EventType, string), int> repeatCounter = new();
+
+        foreach (var actual in actualSequence)
+        {
+            string normalizedTarget = NormalizeTarget(actual.Target);
+            var key = (actual.Type, normalizedTarget);
+
+            int matchedIndex = -1;
+
+            // 只匹配当前期待步骤
+            if (currentStandardIndex < standardSequence.Count &&
+                EventMatch(actual, standardSequence[currentStandardIndex]))
+            {
+                matchedIndex = currentStandardIndex;
+
+                if (FirstTrueAction)
+                {
+                    ITMN = actual.Time;
+                    FirstTrueAction = false;
+                }
+
+                currentStandardIndex++; // 严格推进
+            }
+            else
+            {
+                // 判断是不是未来步骤提前做
+                bool isFutureStep = false;
+
+                for (int i = currentStandardIndex + 1; i < standardSequence.Count; i++)
+                {
+                    if (EventMatch(actual, standardSequence[i]))
+                    {
+                        isFutureStep = true;
+                        break;
+                    }
+                }
+
+                if (isFutureStep)
+                {
+                    CommissionErrors.Add(new EventMatchResult(actual, -1));
+                }
+                else
+                {
+                    // 完全不在标准中的操作
+                    if (!invalidVisited.Contains(key))
+                        invalidVisited.Add(key);
+                    else
+                        BE++;
+
+                    CommissionErrors.Add(new EventMatchResult(actual, -1));
+                }
+            }
+
+            MatchResults.Add(new EventMatchResult(actual, matchedIndex));
+
+            
+        }
+        // Motor 错误（重复 / 不稳定）
+        var lastKey = default((PlayerEventSystem.EventType, string));
+        int consecutiveCount = 0;
+
+        foreach (var r in MatchResults)
+        {
+            var key = (r.ActualEvent.Type, r.ActualEvent.Target);
+
+            if (key.Equals(lastKey))
+            {
+                consecutiveCount++;
+            }
+            else
+            {
+                consecutiveCount = 1;
+            }
+
+            if (consecutiveCount >= 3)
+            {
+                MotorErrors.Add(r);
+            }
+
+            lastKey = key;
+        }
+
+        // Omission（剩下没完成的都是遗漏）
+        for (int i = currentStandardIndex; i < standardSequence.Count; i++)
+        {
+            OmissionErrors.Add(standardSequence[i]);
+        }
+
+        // ===== Debug 输出 =====
+        Debug.Log($"[Evaluation] Matched {standardSequence.Count - OmissionErrors.Count} / {standardSequence.Count}");
+
+        foreach (var e in OmissionErrors)
+            Debug.Log($"[遗漏错误Omission Error] Missing {e.Type} {e.Target}");
+
+        foreach (var e in CommissionErrors)
+            Debug.Log($"[执行错误Commission Error] Extra or wrong order: {e.ActualEvent.Type} {e.ActualEvent.Target}");
+
+        foreach (var e in MotorErrors)
+            Debug.Log($"[运动错误Motor Error] Repeated or unstable action: {e.ActualEvent.Type} {e.ActualEvent.Target}");
+
+        PSMM = (float)standardSequence.Count / (float)actualSequence.Count;
+    
     }
     private void HandleInvalid(string target, HashSet<string> invalidVisited)
     {

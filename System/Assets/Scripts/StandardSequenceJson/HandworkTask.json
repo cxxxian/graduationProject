@@ -1,0 +1,86 @@
+{
+  "StandardSequence": [
+    {
+      "StringType": "Grab",
+      "Target": "ShortStick"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "ShortStick"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "ShortStick"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "Glue"
+    },
+
+    {
+      "StringType": "Grab",
+      "Target": "LongStick"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "LongStick"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "LongStick"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "Glue"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "ShortStick"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "ShortStick"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "ShortStick"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "Triangle"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "MiddleQuad"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "MiddleQuad"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "MiddleQuad"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "Triangle"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "Star"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "Star"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "Star"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "Tassel"
+    }
+
+  ]
+}

@@ -11,7 +11,7 @@ public class ProgressController : MonoBehaviour
     public GameObject emptyPage;
     // 任务未完成提示面板
     public GameObject uncompletedPage;
-    // 任务未完成提示面板
+    // 任务完成提示面板
     public GameObject completedPage;
     // 每个任务面板显示的时长
     public float showPageDuration = 5f;
@@ -31,7 +31,10 @@ public class ProgressController : MonoBehaviour
     // 是否处于空白页面
     private bool isOnEmptyPage = false;
     // 标记是否正在处理未完成流程
-    private bool isProcessingUncompleted = false; 
+    private bool isProcessingUncompleted = false;
+
+    [Header("任务完成检测")]
+    public TaskEvaluator evaluator;
 
     private void Start()
     {
@@ -78,6 +81,9 @@ public class ProgressController : MonoBehaviour
     // 初始化所有页面状态：隐藏所有任务面板、空白页、未完成面板
     private void InitAllPages()
     {
+        // 手工任务的OmissionErrors在此处清除
+        // 因为需要在游玩过程中记录遗漏错误，所以不可以在完成时统一清除
+        evaluator.OmissionErrors.Clear();
         // 隐藏所有任务面板
         foreach (var page in taskPages)
         {
@@ -142,6 +148,29 @@ public class ProgressController : MonoBehaviour
             Debug.Log("所有任务已完成！");
             emptyPage.SetActive(false);
             completedPage.SetActive(true);
+            Debug.Log("任务完成");
+            PlayerEventSystem.Instance.PrintAllLogs();
+
+            // 进行行为判定
+            evaluator.EvaluateHandwork();
+            // 收集该场景的总结
+            var result = evaluator.GetResultSummary();
+            TaskSessionManager.Instance.AddTaskResult(result);
+            // 清空准备进入下一个场景
+            PlayerEventSystem.Instance.Clear();
+
+            // 输出存储的数据结果
+            foreach (var r in TaskSessionManager.Instance.AllTaskResults)
+            {
+                Debug.Log($"Scene: {r.SceneName}");
+                Debug.Log($"Completion: {r.CompletionRate}");
+                Debug.Log($"Omission: {r.OmissionCount}");
+                Debug.Log($"Commission: {r.CommissionCount}");
+                Debug.Log($"Motor: {r.MotorCount}");
+                Debug.Log($"ITMN: {r.ITMN}");
+                Debug.Log($"PSMM: {r.PSMM}");
+                Debug.Log($"BE: {r.BE}");
+            }
             return;
         }
 
@@ -226,6 +255,7 @@ public class ProgressController : MonoBehaviour
         {
             Debug.Log("当前任务未完成！显示未完成面板，5秒后重新显示任务面板，再切回空白页");
             // 启动未完成流程协程
+            evaluator.OmissionErrors.Add(new PlayerEventSystem.PlayerEvent(PlayerEventSystem.EventType.Grab, "", 0f, "在" + snapper.currentStage + "阶段出现遗漏错误"));
             StartCoroutine(ProcessUncompletedFlow());
         }
     }
@@ -250,6 +280,7 @@ public class ProgressController : MonoBehaviour
             case 7:
                 return snapper.currentStage == BuildStage.Finished;
             default:
+                
                 return false;
         }
     }

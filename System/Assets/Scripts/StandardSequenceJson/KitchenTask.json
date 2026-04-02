@@ -36,7 +36,10 @@
       "StringType": "Grab",
       "Target": "CoffeeCup"
     },
-
+    {
+      "StringType": "Open",
+      "Target": "Fridge"
+    },
     {
       "StringType": "Grab",
       "Target": "Banana"
@@ -63,6 +66,10 @@
     {
       "StringType": "Drop",
       "Target": "Banana"
+    },
+    {
+      "StringType": "Close",
+      "Target": "Fridge"
     }
   ]
 }

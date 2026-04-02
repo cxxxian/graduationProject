@@ -48,6 +48,19 @@ public class ShoppingCart : MonoBehaviour
     // 玩家与购物车之间的水平旋转差（角度）
     private float yawOffset;
 
+    public float contactGraceTime = 0.2f;
+    public float pushSmoothTime = 0.04f;
+    public float pushMaxSpeed = 8f;
+    public float pushRotateSpeed = 18f;
+    public float itemFollowPositionStrength = 18f;
+    public float itemFollowRotationStrength = 12f;
+    public float itemMaxFollowSpeed = 4.5f;
+
+    private Vector3 cartVelocity;
+    private bool isFinalPushing = false;
+    private float leftHandLastContactTime = -999f;
+    private float rightHandLastContactTime = -999f;
+
     public BasketTrigger basketTrigger;
 
     void Start()
@@ -75,7 +88,6 @@ public class ShoppingCart : MonoBehaviour
         {
             leftHand = devices[0];
         }
-
     }
 
     void Update()
@@ -112,10 +124,16 @@ public class ShoppingCart : MonoBehaviour
         rightHand.TryGetFeatureValue(CommonUsages.triggerButton, out rightTrigger);
         leftHand.TryGetFeatureValue(CommonUsages.triggerButton, out leftTrigger);
 
-        // 双手必须都按下
-        bool isFinalPushing = (rightTrigger && leftTrigger && isPushing);
+        bool leftHandContactValid = leftHandOn || (Time.time - leftHandLastContactTime <= contactGraceTime);
+        bool rightHandContactValid = rightHandOn || (Time.time - rightHandLastContactTime <= contactGraceTime);
 
-        
+        if (isPushing && !(leftHandContactValid && rightHandContactValid))
+        {
+            EndPushMode();
+        }
+
+        // 双手必须都按下
+        isFinalPushing = (rightTrigger && leftTrigger && isPushing && leftHandContactValid && rightHandContactValid);
 
         // 推车逻辑
         if (isFinalPushing)
@@ -128,16 +146,21 @@ public class ShoppingCart : MonoBehaviour
             targetPos.y = cart.position.y;
 
             // 把购物车位置设置到目标位置
-            cart.position = targetPos;
+            cart.position = Vector3.SmoothDamp(cart.position, targetPos, ref cartVelocity, pushSmoothTime, pushMaxSpeed);
 
             // 计算目标旋转
             float playerYaw = playerRig.eulerAngles.y;
             float targetYaw = playerYaw + yawOffset;
-            cart.rotation = Quaternion.Euler(0f, targetYaw, 0f);
-
+            Quaternion targetRotation = Quaternion.Euler(0f, targetYaw, 0f);
+            cart.rotation = Quaternion.Slerp(cart.rotation, targetRotation, pushRotateSpeed * Time.deltaTime);
         }
+        else
+        {
+            cartVelocity = Vector3.zero;
+        }
+
         // 让购物车内物体跟随
-        if(basketTrigger != null)
+        if (basketTrigger != null)
         {
             foreach (var info in basketTrigger.insideBasketItems)
             {
@@ -149,19 +172,52 @@ public class ShoppingCart : MonoBehaviour
                 Rigidbody rb = info.obj.GetComponent<Rigidbody>();
                 if (rb != null)
                 {
-                    // 推动时禁用物理，停止推动恢复物理
-                    rb.isKinematic = isFinalPushing;
+                    rb.useGravity = !isFinalPushing;
                 }
 
                 // 仅在推动时控制位置和旋转
                 if (isFinalPushing)
                 {
-                    info.obj.transform.position = cart.TransformPoint(info.localPos);
-                    info.obj.transform.rotation = cart.rotation * info.localRot;
+                    Vector3 targetItemPos = cart.TransformPoint(info.localPos);
+                    Quaternion targetItemRot = cart.rotation * info.localRot;
+
+                    if (rb != null)
+                    {
+                        Vector3 toTarget = targetItemPos - rb.position;
+                        Vector3 desiredVelocity = toTarget * itemFollowPositionStrength;
+                        rb.velocity = Vector3.ClampMagnitude(desiredVelocity, itemMaxFollowSpeed);
+
+                        Quaternion deltaRotation = targetItemRot * Quaternion.Inverse(rb.rotation);
+                        deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+
+                        if (angle > 180f)
+                        {
+                            angle -= 360f;
+                        }
+
+                        if (!float.IsNaN(axis.x) && axis.sqrMagnitude > 0.0001f)
+                        {
+                            Vector3 desiredAngularVelocity = axis.normalized * angle * Mathf.Deg2Rad * itemFollowRotationStrength;
+                            rb.angularVelocity = desiredAngularVelocity;
+                        }
+                        else
+                        {
+                            rb.angularVelocity = Vector3.zero;
+                        }
+                    }
+                    else
+                    {
+                        info.obj.transform.position = Vector3.Lerp(info.obj.transform.position, targetItemPos, itemFollowPositionStrength * Time.deltaTime);
+                        info.obj.transform.rotation = Quaternion.Slerp(info.obj.transform.rotation, targetItemRot, itemFollowRotationStrength * Time.deltaTime);
+                    }
+                }
+                else if (rb != null)
+                {
+                    rb.velocity *= 0.9f;
+                    rb.angularVelocity *= 0.85f;
                 }
             }
         }
-        
 
         // 购物车 UI 交互逻辑
         bool aPressed = false;
@@ -189,14 +245,12 @@ public class ShoppingCart : MonoBehaviour
     {
         isShow = !isShow;
         calculatorPricePanel.SetActive(isShow);
-
     }
 
     public void GetTotalPrice()
     {
         int price = shoppingTaskController.totalPrice;
         calculatorPriceText.text = price.ToString();
-
     }
 
     public void Settle()
@@ -213,8 +267,9 @@ public class ShoppingCart : MonoBehaviour
             UnFinishedPanel.SetActive(true);
             // 启动延迟逻辑
             StartCoroutine(HandleUnfinishedUI());
-        } 
+        }
     }
+
     IEnumerator HandleUnfinishedUI()
     {
         yield return new WaitForSeconds(5f); // 等5秒
@@ -232,16 +287,32 @@ public class ShoppingCart : MonoBehaviour
         if (other.CompareTag("LeftHand")) 
         {
             leftHandOn = true;
+            leftHandLastContactTime = Time.time;
         }
         if (other.CompareTag("RightHand")) 
         {
             rightHandOn = true;
+            rightHandLastContactTime = Time.time;
         }
 
         if (leftHandOn && rightHandOn && !isPushing)
         {
             Debug.Log("准备推车");
             StartPushMode();
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("LeftHand"))
+        {
+            leftHandOn = true;
+            leftHandLastContactTime = Time.time;
+        }
+        if (other.CompareTag("RightHand"))
+        {
+            rightHandOn = true;
+            rightHandLastContactTime = Time.time;
         }
     }
 
@@ -254,11 +325,6 @@ public class ShoppingCart : MonoBehaviour
         if (other.CompareTag("RightHand")) 
         {
             rightHandOn = false;
-        }
-
-        if (isPushing && !(leftHandOn && rightHandOn))
-        {
-            EndPushMode();
         }
     }
 
@@ -273,8 +339,11 @@ public class ShoppingCart : MonoBehaviour
         // 记录购物车与玩家之间在 yaw 的角度差
         yawOffset = Mathf.DeltaAngle(playerRig.eulerAngles.y, cart.eulerAngles.y);
     }
+
     void EndPushMode()
     {
         isPushing = false;
+        isFinalPushing = false;
+        cartVelocity = Vector3.zero;
     }
 }

@@ -6,7 +6,7 @@ public class FridgeDoorController : MonoBehaviour
 {   
     // 冰箱Animator
     public Animator animator;
-    // 是否开门
+    // 是否开�?
     private bool isOpen = false;
 
     public void ToggleDoor()
@@ -17,12 +17,12 @@ public class FridgeDoorController : MonoBehaviour
         {
             if (isOpen)
             {
-                //PlayerEventSystem.Instance.RecordOpen("冰箱");
+                PlayerEventSystem.Instance.RecordOpen("Fridge");
                 animator.SetTrigger("Open");
             }
             else
             {
-                //PlayerEventSystem.Instance.RecordClose("冰箱");
+                PlayerEventSystem.Instance.RecordClose("Fridge");
                 animator.SetTrigger("Close");
             }
                 

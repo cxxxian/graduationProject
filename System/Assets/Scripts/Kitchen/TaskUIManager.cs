@@ -39,7 +39,13 @@ public class TaskUIManager : MonoBehaviour
     }
     void Update()
     {
-        if (!rightHand.isValid) return;
+        if (!rightHand.isValid)
+        {
+            var devices = new List<InputDevice>();
+            InputDevices.GetDevicesAtXRNode(XRNode.RightHand, devices);
+            if (devices.Count > 0) rightHand = devices[0];
+            else return;
+        }
 
         bool aPressed;
         rightHand.TryGetFeatureValue(CommonUsages.primaryButton, out aPressed);
@@ -64,11 +70,11 @@ public class TaskUIManager : MonoBehaviour
 
         if (isActive)
         {
-            PlayerEventSystem.Instance.RecordClose("任务面板");
+            //PlayerEventSystem.Instance.RecordClose("任务面板");
         }
         else
         {
-            PlayerEventSystem.Instance.RecordOpen("任务面板");
+            //PlayerEventSystem.Instance.RecordOpen("任务面板");
         }
         
         Debug.Log(isActive ? "关闭面板" : "打开面板");

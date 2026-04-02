@@ -1,5 +1,7 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class LanternStickAssembler : MonoBehaviour
 {
@@ -41,11 +43,27 @@ public class LanternStickAssembler : MonoBehaviour
     public Material plasterMaterial;
     public Material starMaterial;
 
+    [Header("震动反馈")]
+    public float hapticAmplitude = 1.0f;
+    public float hapticDuration = 0.15f;
+
     public BuildStage currentStage = BuildStage.DownBuild;
     private bool isSnapping = false;
 
+    private InputDevice rightHandDevice;
+    private InputDevice leftHandDevice;
+
     private void Start()
     {
+        // 获取手柄设备
+        var devices = new List<InputDevice>();
+        InputDevices.GetDevicesAtXRNode(XRNode.RightHand, devices);
+        if (devices.Count > 0) rightHandDevice = devices[0];
+
+        devices.Clear();
+        InputDevices.GetDevicesAtXRNode(XRNode.LeftHand, devices);
+        if (devices.Count > 0) leftHandDevice = devices[0];
+
         // 木棍层
         InitLayer(downStickLayer);
         InitLayer(middleStickLayer);
@@ -63,6 +81,20 @@ public class LanternStickAssembler : MonoBehaviour
 
     private void Update()
     {
+        // 刷新设备有效性
+        if (!rightHandDevice.isValid)
+        {
+            var devices = new List<InputDevice>();
+            InputDevices.GetDevicesAtXRNode(XRNode.RightHand, devices);
+            if (devices.Count > 0) rightHandDevice = devices[0];
+        }
+        if (!leftHandDevice.isValid)
+        {
+            var devices = new List<InputDevice>();
+            InputDevices.GetDevicesAtXRNode(XRNode.LeftHand, devices);
+            if (devices.Count > 0) leftHandDevice = devices[0];
+        }
+
         if (IsGlueStage())
         {
             return;
@@ -201,6 +233,9 @@ public class LanternStickAssembler : MonoBehaviour
         slot.gameObject.SetActive(true);
 
         HideAllGhosts(layer);
+
+        // 触发震动反馈
+        TriggerHapticFeedback();
 
         // 检查是否完成该层
         if (IsLayerStructureFinished(layer) && 
@@ -383,6 +418,23 @@ public class LanternStickAssembler : MonoBehaviour
     public void Grab()
     {
         PlayerEventSystem.Instance.RecordGrab(currentStick.transform.gameObject);
+    }
+
+    void TriggerHapticFeedback()
+    {
+        Debug.Log($"触发震动反馈 - 右手设备有效: {rightHandDevice.isValid}, 左手设备有效: {leftHandDevice.isValid}");
+        
+        if (rightHandDevice.isValid)
+        {
+            rightHandDevice.SendHapticImpulse(0, hapticAmplitude, hapticDuration);
+            Debug.Log($"右手震动已发送 - 强度: {hapticAmplitude}, 时长: {hapticDuration}");
+        }
+        
+        if (leftHandDevice.isValid)
+        {
+            leftHandDevice.SendHapticImpulse(0, hapticAmplitude, hapticDuration);
+            Debug.Log($"左手震动已发送 - 强度: {hapticAmplitude}, 时长: {hapticDuration}");
+        }
     }
 }
 

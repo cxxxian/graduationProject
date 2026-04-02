@@ -9,10 +9,10 @@ using UnityEngine.UI;
 
 public class SceneTaskManager : MonoBehaviour
 {
-    [Header("æ˜¯å¦è‡ªåŠ¨å¼€å§‹æ¸¸æˆï¼ˆè®­ç»ƒå…³å¡å¼€å¯ï¼‰")]
+    [Header("ÊÇ·ñ×Ô¶¯¿ªÊ¼ÓÎÏ·£¨ÑµÁ·¹Ø¿¨¿ªÆô£©")]
     public bool autoStartGame = false;
 
-    [Header("ä»»åŠ¡ç®¡ç†List")]
+    [Header("ÈÎÎñ¹ÜÀíList")]
     private List<ITask> tasks = new List<ITask>();
 
     private bool allComplete = false;
@@ -20,30 +20,33 @@ public class SceneTaskManager : MonoBehaviour
     [Header("UIManager")]
     public TaskUIManager uiManager;
 
-    [Header("ä»‹ç»éŸ³é¢‘")]
-    // éŸ³é¢‘Source
+    [Header("½éÉÜÒôÆµ")]
+    // ÒôÆµSource
     public AudioSource introAudio;
-    // å»¶è¿Ÿæ’­æ”¾ç§’æ•°
+    // ÑÓ³Ù²¥·ÅÃëÊı
     public float introDelay = 3f;
-    // æ¸¸æˆæ˜¯å¦å¼€å§‹
+    // ÓÎÏ·ÊÇ·ñ¿ªÊ¼
     private bool gameStarted = false;
 
-    [Header("å¼€å§‹æ¸¸æˆåè¦éšè—çš„ UI é¢æ¿")]
+    [Header("¿ªÊ¼ÓÎÏ·ºóÒªÒş²ØµÄ UI Ãæ°å")]
     public GameObject taskUIPanel;
     public GameObject nextLevelToggle;
     public GameObject backHomeToggle;
     public GameObject startButton;
     public GameObject againButton;
 
-    [Header("ä»»åŠ¡å®Œæˆæ£€æµ‹")]
+    [Header("ËùÓĞÈÎÎñÍê³ÉºóÏÔÊ¾µÄ½áËã°´Å¥")]
+    public GameObject settleButton;
+
+    [Header("ÈÎÎñÍê³É¼ì²â")]
     public TaskEvaluator evaluator;
 
     void Start()
     {
-        // å»¶è¿Ÿæ’­æ”¾ä»‹ç»éŸ³é¢‘
+        // ÑÓ³Ù²¥·Å½éÉÜÒôÆµ
         StartCoroutine(PlayIntroAfterDelay());
 
-        // è®­ç»ƒå…³å¡ç›´æ¥å¼€å§‹æ¸¸æˆæ— éŸ³é¢‘
+        // ÑµÁ·¹Ø¿¨Ö±½Ó¿ªÊ¼ÓÎÏ·ÎŞÒôÆµ
         if (autoStartGame)
         {
             StartGame();
@@ -56,7 +59,7 @@ public class SceneTaskManager : MonoBehaviour
         PlayIntroAudio();
     }
 
-    // æ’­æ”¾ä»‹ç»éŸ³é¢‘ï¼ˆç»‘å®šé‡æ–°æ’­æ”¾æŒ‰é’®ï¼‰
+    // ²¥·Å½éÉÜÒôÆµ£¨°ó¶¨ÖØĞÂ²¥·Å°´Å¥£©
     public void PlayIntroAudio()
     {
         if (introAudio != null)
@@ -66,7 +69,7 @@ public class SceneTaskManager : MonoBehaviour
         }
     }
 
-    // å¼€å§‹æ¸¸æˆï¼ˆç»‘å®šå¼€å§‹æŒ‰é’®ï¼‰
+    // ¿ªÊ¼ÓÎÏ·£¨°ó¶¨¿ªÊ¼°´Å¥£©
     public void StartGame()
     {
         if (gameStarted) return;
@@ -77,7 +80,7 @@ public class SceneTaskManager : MonoBehaviour
         {
             introAudio.Stop();
         }
-        // éšè— UI é¢æ¿
+        // Òş²Ø UI Ãæ°å
         if (taskUIPanel != null)
         {
             taskUIPanel.SetActive(false);
@@ -86,7 +89,7 @@ public class SceneTaskManager : MonoBehaviour
 }
 
         CollectTasks();
-        // å¼€å§‹è®¡æ—¶
+        // ¿ªÊ¼¼ÆÊ±
         //Timer.Instance.StartTimer();
     }
 
@@ -108,7 +111,7 @@ public class SceneTaskManager : MonoBehaviour
     {
         tasks.Clear();
 
-        // è‡ªåŠ¨æ”¶é›†åœºæ™¯ä¸­ç»§æ‰¿è‡ª ITask çš„ä»»åŠ¡
+        // ×Ô¶¯ÊÕ¼¯³¡¾°ÖĞ¼Ì³Ğ×Ô ITask µÄÈÎÎñ
         var allTaskComponents = FindObjectsOfType<MonoBehaviour>();
         foreach (var comp in allTaskComponents)
         {
@@ -116,16 +119,16 @@ public class SceneTaskManager : MonoBehaviour
             {
                 task.InitializeTask();
                 tasks.Add(task);
-                Debug.Log($"ä»»åŠ¡: {task.TaskName}");
+                Debug.Log($"ÈÎÎñ: {task.TaskName}");
             }
         }
 
-        Debug.Log($"å·²æ”¶é›†åˆ°åœºæ™¯ä¸­ {tasks.Count} ä¸ªä»»åŠ¡");
+        Debug.Log($"ÒÑÊÕ¼¯µ½³¡¾°ÖĞ {tasks.Count} ¸öÈÎÎñ");
     }
 
     void Update()
     {   
-        // æ¸¸æˆæœªå¼€å§‹æˆ–è€…ç»“æŸéƒ½ä¸éœ€è¦åˆ¤æ–­
+        // ÓÎÏ·Î´¿ªÊ¼»òÕß½áÊø¶¼²»ĞèÒªÅĞ¶Ï
         if (!gameStarted) return;
         if (allComplete) return;
 
@@ -135,24 +138,24 @@ public class SceneTaskManager : MonoBehaviour
         {
             bool done = task.IsTaskComplete;
 
-            // æ›´æ–°æ˜¯å¦å®ŒæˆUI
+            // ¸üĞÂÊÇ·ñÍê³ÉUI
             if (uiManager != null)
             {
                 switch (task.TaskName)
                 {
-                    case "æŠŠå†°ç®±ä¸­çš„é¦™è•‰å…¨éƒ¨æ‹¿åˆ°æ¡Œå­ä¸Š":
+                    case "°Ñ±ùÏäÖĞµÄÏã½¶È«²¿ÄÃµ½×À×ÓÉÏ":
                         uiManager.SetBananaTaskComplete(done);
                         break;
-                    case "å°†å’–å•¡å€’å…¥æ¯å­ä¸­":
+                    case "½«¿§·Èµ¹Èë±­×ÓÖĞ":
                         uiManager.SetCoffeeTaskComplete(done);
                         break;
-                    case "æ‹¿ä¸¤ç‰‡åå¸åˆ°ç›˜å­ä¸­":
+                    case "ÄÃÁ½Æ¬ÍÂË¾µ½ÅÌ×ÓÖĞ":
                         uiManager.SetBreadTaskComplete(done);
                         break;
-                    case "å¼€å¯/å…³é—­è™šæ‹Ÿè®¡ç®—å™¨":
+                    case "¿ªÆô/¹Ø±ÕĞéÄâ¼ÆËãÆ÷":
                         uiManager.SetPanelTaskComplete(done);
                         break;
-                    case "æ¨åŠ¨è´­ç‰©è½¦åˆ°æŒ‡å®šä½ç½®":
+                    case "ÍÆ¶¯¹ºÎï³µµ½Ö¸¶¨Î»ÖÃ":
                         uiManager.SetPushTaskComplete(done);
                         break;
 
@@ -166,35 +169,44 @@ public class SceneTaskManager : MonoBehaviour
         if (allDone)
         {
             allComplete = true;
-            OnAllTasksComplete();
+
+            // Í£Ö¹¼ÆÊ±
+            Timer.Instance.StopTimer();
+
+            // ÏÔÊ¾ÈÎÎñÃæ°åºÍ½áËã°´Å¥£¬µÈ´ıÍæ¼Ò¹ØºÃ±ùÏäºóÊÖ¶¯µã»÷½áËã
+            if (taskUIPanel != null) taskUIPanel.SetActive(true);
+            if (settleButton != null) settleButton.SetActive(true);
+
+            Debug.Log("ËùÓĞÈÎÎñÒÑÍê³É£¬µÈ´ıÍæ¼Òµã»÷½áËã");
         }
+    }
+
+    // ½áËã°´Å¥µã»÷£¨°ó¶¨µ½½áËã°´Å¥£©
+    public void OnSettleButtonClick()
+    {
+        if (settleButton != null) settleButton.SetActive(false);
+        OnAllTasksComplete();
     }
 
     private void OnAllTasksComplete()
     {
-        // ä»»åŠ¡ç»“æŸåœæ­¢è®¡æ—¶
-        Timer.Instance.StopTimer();
+        Debug.Log("¿ªÊ¼½áËã");
 
-        // ä»»åŠ¡å®Œæˆæ¢å¤ UI é¢æ¿
-        if (taskUIPanel != null)
-        {
-            taskUIPanel.SetActive(true);
-            nextLevelToggle.SetActive(true);
-            backHomeToggle.SetActive(true);
-
-        }
-        Debug.Log("ä»»åŠ¡å®Œæˆ");
+        // ½áËãÍê³ÉºóÏÔÊ¾ÏÂÒ»¹Ø/»ØÖ÷Ò³°´Å¥
+        if (nextLevelToggle != null) nextLevelToggle.SetActive(true);
+        if (backHomeToggle != null) backHomeToggle.SetActive(true);
         PlayerEventSystem.Instance.PrintAllLogs();
 
-        // è¿›è¡Œè¡Œä¸ºåˆ¤å®š
+        // ½øĞĞĞĞÎªÅĞ¶¨
         evaluator.EvaluateKitchen();
-        // æ”¶é›†è¯¥åœºæ™¯çš„æ€»ç»“
+
+        // ÊÕ¼¯¸Ã³¡¾°µÄ×Ü½á
         var result = evaluator.GetResultSummary();
         TaskSessionManager.Instance.AddTaskResult(result);
-        // æ¸…ç©ºå‡†å¤‡è¿›å…¥ä¸‹ä¸€ä¸ªåœºæ™¯
+        // Çå¿Õ×¼±¸½øÈëÏÂÒ»¸ö³¡¾°
         PlayerEventSystem.Instance.Clear();
 
-        // è¾“å‡ºå­˜å‚¨çš„æ•°æ®ç»“æœ
+        // Êä³ö´æ´¢µÄÊı¾İ½á¹û
         foreach (var r in TaskSessionManager.Instance.AllTaskResults)
         {
             Debug.Log($"Scene: {r.SceneName}");
@@ -207,7 +219,7 @@ public class SceneTaskManager : MonoBehaviour
             Debug.Log($"BE: {r.BE}");
         }
 
-        // ä¸´æ—¶æµ‹è¯•åœºæ™¯è¿ä¸²
+        // ÁÙÊ±²âÊÔ³¡¾°Á¬´®
         //SceneManager.LoadScene("LivingRoomScene");
 
     }

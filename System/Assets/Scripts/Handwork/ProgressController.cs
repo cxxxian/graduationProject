@@ -278,20 +278,19 @@ public class ProgressController : MonoBehaviour
         switch (currentTaskIndex)
         {
             case 2:
-                return snapper.currentStage == BuildStage.DownGlue;
+                return snapper.currentStage >= BuildStage.DownGlue;
             case 3:
-                return snapper.currentStage == BuildStage.MiddleBuild;
+                return snapper.currentStage >= BuildStage.MiddleBuild;
             case 4:
-                return snapper.currentStage == BuildStage.DownPlaster;
+                return snapper.currentStage >= BuildStage.DownPlaster;
             case 5:
-                return snapper.currentStage == BuildStage.MiddleStar;
+                return snapper.currentStage >= BuildStage.MiddleStar;
             case 6:
-                return snapper.currentStage == BuildStage.Tassel;
+                return snapper.currentStage >= BuildStage.Tassel;
             case 7:
                 timer.StopTimer();
-                return snapper.currentStage == BuildStage.Finished;
+                return snapper.currentStage >= BuildStage.Finished;
             default:
-                
                 return false;
         }
     }

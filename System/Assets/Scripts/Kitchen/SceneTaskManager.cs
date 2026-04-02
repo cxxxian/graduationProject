@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.XR.PICO.TOBSupport;
 using Unity.XR.PXR;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class SceneTaskManager : MonoBehaviour
@@ -29,6 +30,8 @@ public class SceneTaskManager : MonoBehaviour
 
     [Header("开始游戏后要隐藏的 UI 面板")]
     public GameObject taskUIPanel;
+    public GameObject nextLevelToggle;
+    public GameObject backHomeToggle;
     public GameObject startButton;
     public GameObject againButton;
 
@@ -83,7 +86,22 @@ public class SceneTaskManager : MonoBehaviour
 }
 
         CollectTasks();
+        // 开始计时
+        //Timer.Instance.StartTimer();
+    }
 
+    //public void ReStart()
+    //{
+    //    SceneManager.LoadScene("KitchenTaskScene");
+    //}
+    public void NextLevel()
+    {
+        SceneManager.LoadScene("LivingRoomScene");
+    }
+    public void BackHome()
+    {
+        TaskSessionManager.Instance = null;
+        SceneManager.LoadScene("StartScene");
     }
 
     private void CollectTasks()
@@ -154,10 +172,16 @@ public class SceneTaskManager : MonoBehaviour
 
     private void OnAllTasksComplete()
     {
+        // 任务结束停止计时
+        Timer.Instance.StopTimer();
+
         // 任务完成恢复 UI 面板
         if (taskUIPanel != null)
         {
             taskUIPanel.SetActive(true);
+            nextLevelToggle.SetActive(true);
+            backHomeToggle.SetActive(true);
+
         }
         Debug.Log("任务完成");
         PlayerEventSystem.Instance.PrintAllLogs();
@@ -182,6 +206,10 @@ public class SceneTaskManager : MonoBehaviour
             Debug.Log($"PSMM: {r.PSMM}");
             Debug.Log($"BE: {r.BE}");
         }
+
+        // 临时测试场景连串
+        //SceneManager.LoadScene("LivingRoomScene");
+
     }
 
 }

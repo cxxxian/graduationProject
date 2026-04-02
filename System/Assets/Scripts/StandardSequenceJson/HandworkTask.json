@@ -12,27 +12,20 @@
       "StringType": "Grab",
       "Target": "ShortStick"
     },
+ 
     {
       "StringType": "Grab",
-      "Target": "Glue"
+      "Target": "LongStick"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "LongStick"
+    },
+    {
+      "StringType": "Grab",
+      "Target": "LongStick"
     },
 
-    {
-      "StringType": "Grab",
-      "Target": "LongStick"
-    },
-    {
-      "StringType": "Grab",
-      "Target": "LongStick"
-    },
-    {
-      "StringType": "Grab",
-      "Target": "LongStick"
-    },
-    {
-      "StringType": "Grab",
-      "Target": "Glue"
-    },
     {
       "StringType": "Grab",
       "Target": "ShortStick"

@@ -4,7 +4,8 @@ using static PlayerEventSystem;
 
 public class TaskEvaluator : MonoBehaviour
 {
-    public TaskDefinition taskDefinition;
+    public TaskDefinition KitentaskDefinition;
+    public TaskDefinition HandWorkDefinition;
 
     // 对齐结果
     public List<EventMatchResult> MatchResults { get; private set; } = new List<EventMatchResult>();
@@ -31,7 +32,7 @@ public class TaskEvaluator : MonoBehaviour
     public void EvaluateKitchen()
     {
         var actualSequence = PlayerEventSystem.Instance.GetAllEvents();
-        var standardSequence = taskDefinition.StandardSequence;
+        var standardSequence = KitentaskDefinition.StandardSequence;
 
 
         MatchResults.Clear();
@@ -43,7 +44,7 @@ public class TaskEvaluator : MonoBehaviour
         PSMM = 0;
         BE = 0;
 
-        PlayerEventSystem.Instance.PrintStandardAllLogs(taskDefinition.StandardSequence);
+        PlayerEventSystem.Instance.PrintStandardAllLogs(KitentaskDefinition.StandardSequence);
 
         bool[] standardMatched = new bool[standardSequence.Count];
 
@@ -373,7 +374,7 @@ public class TaskEvaluator : MonoBehaviour
     public void EvaluateHandwork()
     {
         var actualSequence = PlayerEventSystem.Instance.GetAllEvents();
-        var standardSequence = taskDefinition.StandardSequence;
+        var standardSequence = HandWorkDefinition.StandardSequence;
 
         MatchResults.Clear();
         //OmissionErrors.Clear();
@@ -384,6 +385,8 @@ public class TaskEvaluator : MonoBehaviour
         FirstTrueAction = true;
         PSMM = 0;
         BE = 0;
+
+        PlayerEventSystem.Instance.PrintStandardAllLogs(HandWorkDefinition.StandardSequence);
 
         int currentStandardIndex = 0;
 
@@ -515,9 +518,15 @@ public class TaskEvaluator : MonoBehaviour
         result.MotorCount = MotorErrors.Count;
 
         int totalStandard = 1;
-        if (taskDefinition != null) {
-            totalStandard = taskDefinition.StandardSequence.Count;
+        if (HandWorkDefinition != null)
+        {
+            totalStandard = HandWorkDefinition.StandardSequence.Count;
         }
+        else if (KitentaskDefinition != null)
+        {
+            totalStandard = KitentaskDefinition.StandardSequence.Count;
+        }
+        
         
         result.CompletionRate = (float)(totalStandard - OmissionErrors.Count) / totalStandard;
 

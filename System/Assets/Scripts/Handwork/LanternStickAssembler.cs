@@ -113,7 +113,8 @@ public class LanternStickAssembler : MonoBehaviour
         // 吸附
         if (nearestDist < snapDistance)
         {
-            if((layer == downStickLayer || layer == upStickLayer) && currentStick.CompareTag("ShortStick"))
+            
+            if ((layer == downStickLayer || layer == upStickLayer) && currentStick.CompareTag("ShortStick"))
             {
                 StartCoroutine(SnapStickToSlot(layer, nearestSlot));
             }
@@ -377,6 +378,11 @@ public class LanternStickAssembler : MonoBehaviour
     public bool IsTasselStage()
     {
         return currentStage == BuildStage.Tassel;
+    }
+    
+    public void Grab()
+    {
+        PlayerEventSystem.Instance.RecordGrab(currentStick.transform.gameObject);
     }
 }
 

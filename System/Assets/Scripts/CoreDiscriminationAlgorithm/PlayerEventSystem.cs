@@ -8,10 +8,29 @@ public class PlayerEventSystem : MonoBehaviour
 {
     public static PlayerEventSystem Instance;
 
+    //private void Awake()
+    //{
+    //    Instance = this;
+    //}
+
     private void Awake()
     {
         Instance = this;
     }
+
+
+    //void Awake()
+    //{
+    //    if (Instance == null)
+    //    {
+    //        Instance = this;
+    //        DontDestroyOnLoad(gameObject);
+    //    }
+    //    else
+    //    {
+    //        Destroy(gameObject);
+    //    }
+    //}
 
     // 事件类型枚举
     public enum EventType
@@ -61,10 +80,10 @@ public class PlayerEventSystem : MonoBehaviour
         logs.Add(e);
         if (type == EventType.Grab || type == EventType.Drop)
         {
-            Debug.Log($"[PlayerEvent] {type}  Target:{target}  Time:{currentTime}");
+            Debug.Log($"[Instance]{Instance.GetInstanceID()} [PlayerEvent] {type}  Target:{target}  Time:{currentTime}");
         }
         else if (type == EventType.EnterZone || type == EventType.ExitZone) {
-            Debug.Log($"[PlayerEvent] {type}  Target:{target}  To Zone:{context}  Time:{currentTime}");
+            Debug.Log($"[Instance]{Instance.GetInstanceID()}[PlayerEvent] {type}  Target:{target}  To Zone:{context}  Time:{currentTime}");
         }
         else if (type == EventType.Open || type == EventType.Close)
         {

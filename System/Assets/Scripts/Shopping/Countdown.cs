@@ -19,6 +19,12 @@ public class CountdownTimer : MonoBehaviour
     private float currentTime;
     private Coroutine countdownCoroutine;
 
+    // 音频Source
+    public AudioSource introAudio;
+    // 延迟播放秒数
+    public float introDelay = 1f;
+
+    
     // 按钮调用的方法
     public void StartMemory()
     {
@@ -65,6 +71,22 @@ public class CountdownTimer : MonoBehaviour
         Debug.Log("倒计时结束！");
         memoryPanel.SetActive(false);
         taskPanel.SetActive(true);
+        StartCoroutine(PlayIntroAfterDelay());
+    }
+
+    IEnumerator PlayIntroAfterDelay()
+    {
+        yield return new WaitForSeconds(introDelay);
+        PlayIntroAudio();
+    }
+    // 播放介绍音频（绑定重新播放按钮）
+    public void PlayIntroAudio()
+    {
+        if (introAudio != null)
+        {
+            introAudio.Stop();
+            introAudio.Play();
+        }
     }
 }
 

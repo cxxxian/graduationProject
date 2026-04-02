@@ -6,18 +6,27 @@ using UnityEngine.UI;
 
 public class InformationCollection : MonoBehaviour
 {
+    public static InformationCollection Instance;
 
-    public TMP_InputField inputField;
-    public TMP_Dropdown genderDropdown;
+    public string userName;
+    public string gender;
 
-    string userName;
-    string gender;
-
-    public void Submit()
+    private void Awake()
     {
-        userName = inputField.text;
-        gender = genderDropdown.options[genderDropdown.value].text;
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // 只保留数据
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
-        //Debug.Log($"姓名：{userName}，性别：{gender}");
+    public void SetUserInfo(string name, string genderValue)
+    {
+        userName = name;
+        gender = genderValue;
     }
 }

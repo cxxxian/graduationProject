@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class ProgressController : MonoBehaviour
 {
@@ -36,8 +37,11 @@ public class ProgressController : MonoBehaviour
     [Header("任务完成检测")]
     public TaskEvaluator evaluator;
 
+    public Timer timer;
+
     private void Start()
     {
+        evaluator.OmissionErrors.Clear();
         // 初始化检查
         if (taskPages == null || taskPages.Length == 0)
         {
@@ -74,6 +78,8 @@ public class ProgressController : MonoBehaviour
             nextButton.onClick.AddListener(OnNextButtonClick);
         }
 
+        timer.StartTimer();
+
         // 启动第一个任务面板的计时
         StartShowPageTimer();
     }
@@ -83,7 +89,7 @@ public class ProgressController : MonoBehaviour
     {
         // 手工任务的OmissionErrors在此处清除
         // 因为需要在游玩过程中记录遗漏错误，所以不可以在完成时统一清除
-        evaluator.OmissionErrors.Clear();
+        
         // 隐藏所有任务面板
         foreach (var page in taskPages)
         {
@@ -97,6 +103,8 @@ public class ProgressController : MonoBehaviour
         if (completedPage != null) completedPage.SetActive(false);
 
         isOnEmptyPage = false;
+
+        
     }
 
     // 显示当前索引的任务面板
@@ -171,6 +179,8 @@ public class ProgressController : MonoBehaviour
                 Debug.Log($"PSMM: {r.PSMM}");
                 Debug.Log($"BE: {r.BE}");
             }
+            // 临时测试场景连串
+            SceneManager.LoadScene("EndScene");
             return;
         }
 
@@ -278,6 +288,7 @@ public class ProgressController : MonoBehaviour
             case 6:
                 return snapper.currentStage == BuildStage.Tassel;
             case 7:
+                timer.StopTimer();
                 return snapper.currentStage == BuildStage.Finished;
             default:
                 

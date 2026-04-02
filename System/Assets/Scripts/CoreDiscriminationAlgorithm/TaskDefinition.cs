@@ -16,7 +16,8 @@ public class TaskDefinition : MonoBehaviour
     // 预指定的标准行为序列
     public List<PlayerEvent> StandardSequence = new();
     // Start is called before the first frame update
-    private void Start()
+    //private void Start()
+    private void Awake()
     {
         LoadFromJson();
  

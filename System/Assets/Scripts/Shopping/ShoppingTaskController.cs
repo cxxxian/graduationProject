@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ShoppingTaskController : MonoBehaviour
 {
@@ -27,6 +29,33 @@ public class ShoppingTaskController : MonoBehaviour
 
     [Header("任务完成检测")]
     public TaskEvaluator evaluator;
+
+    public Timer timer;
+
+    // 音频Source
+    public AudioSource introAudio;
+    // 延迟播放秒数
+    public float introDelay = 3f;
+    void Start()
+    {
+        // 延迟播放介绍音频
+        StartCoroutine(PlayIntroAfterDelay());
+        timer.StartTimer();
+    }
+    IEnumerator PlayIntroAfterDelay()
+    {
+        yield return new WaitForSeconds(introDelay);
+        PlayIntroAudio();
+    }
+    // 播放介绍音频（绑定重新播放按钮）
+    public void PlayIntroAudio()
+    {
+        if (introAudio != null)
+        {
+            introAudio.Stop();
+            introAudio.Play();
+        }
+    }
 
     // 当物体加入篮子调用
     public void OnItemAdded(ItemComponent itemComp)
@@ -174,6 +203,9 @@ public class ShoppingTaskController : MonoBehaviour
             Debug.Log($"PSMM: {r.PSMM}");
             Debug.Log($"BE: {r.BE}");
         }
+
+        // 临时测试场景连串
+        //SceneManager.LoadScene("HandworkPracticeScene");
     }
 
     private bool CheckBasicTask()
@@ -209,5 +241,17 @@ public class ShoppingTaskController : MonoBehaviour
         curPencilHB = 0;
         totalPrice = 0;
         isTaskCompleted = false;
+
+        timer.StopTimer();
+    }
+
+    public void NextLevel()
+    {
+        SceneManager.LoadScene("HandworkPracticeScene");
+    }
+    public void BackHome()
+    {
+        TaskSessionManager.Instance = null;
+        SceneManager.LoadScene("StartScene");
     }
 }

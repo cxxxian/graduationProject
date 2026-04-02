@@ -57,8 +57,10 @@ public class BreadTask : MonoBehaviour, ITask
         if (breadsInPlate.Remove(bread))
         {
             Debug.Log($"Bread 数量 {breadsInPlate.Count}");
-
-            PlayerEventSystem.Instance.RecordExitZone(bread.transform.parent.gameObject, "Plate");
+            if (PlayerEventSystem.Instance)
+            {
+                PlayerEventSystem.Instance.RecordExitZone(bread.transform.parent.gameObject, "Plate");
+            }
         }
     }
 
@@ -75,7 +77,11 @@ public class BreadTask : MonoBehaviour, ITask
 
         Debug.Log($"Bread 数量 {breadsInPlate.Count}");
 
-        PlayerEventSystem.Instance.RecordEnterZone(bread.transform.parent.gameObject, "Plate");
+        if (PlayerEventSystem.Instance)
+        {
+            PlayerEventSystem.Instance.RecordEnterZone(bread.transform.parent.gameObject, "Plate");
+        }
+        
 
         if (breadsInPlate.Count >= goalCount)
         {

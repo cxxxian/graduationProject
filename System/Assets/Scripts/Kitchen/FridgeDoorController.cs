@@ -17,12 +17,12 @@ public class FridgeDoorController : MonoBehaviour
         {
             if (isOpen)
             {
-                PlayerEventSystem.Instance.RecordOpen("冰箱");
+                //PlayerEventSystem.Instance.RecordOpen("冰箱");
                 animator.SetTrigger("Open");
             }
             else
             {
-                PlayerEventSystem.Instance.RecordClose("冰箱");
+                //PlayerEventSystem.Instance.RecordClose("冰箱");
                 animator.SetTrigger("Close");
             }
                 

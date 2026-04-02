@@ -17,6 +17,10 @@ public class ShoppingCart : MonoBehaviour
     public GameObject ResultPanel;
     public TMP_Text ResultText;
 
+    public GameObject UnFinishedPanel;
+
+    public GameObject TaskPanel;
+
     // calculatorPricePanel «∑Òœ‘ æ
     private bool isShow = false;
 
@@ -199,8 +203,28 @@ public class ShoppingCart : MonoBehaviour
     {
         calculatorPricePanel.SetActive(false);
         shoppingTaskController.Settle();
-        ResultPanel.SetActive(true);
-        ResultText.text = shoppingTaskController.taskCompletedText;
+        if (shoppingTaskController.isTaskCompleted)
+        {
+            ResultPanel.SetActive(true);
+            ResultText.text = shoppingTaskController.taskCompletedText;
+        }
+        else
+        {
+            UnFinishedPanel.SetActive(true);
+            // ∆Ù∂Ø—”≥Ÿ¬ﬂº≠
+            StartCoroutine(HandleUnfinishedUI());
+        } 
+    }
+    IEnumerator HandleUnfinishedUI()
+    {
+        yield return new WaitForSeconds(5f); // µ»5√Î
+
+        UnFinishedPanel.SetActive(false);
+        TaskPanel.SetActive(true);
+        yield return new WaitForSeconds(5f); // µ»5√Î
+        TaskPanel.SetActive(false);
+
+        calculatorPricePanel.SetActive(true);
     }
 
     private void OnTriggerEnter(Collider other)

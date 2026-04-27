@@ -7,6 +7,9 @@ public class GluePoint : MonoBehaviour
     public bool glued = false;
     public LanternStickAssembler snapper;
 
+    [Header("上胶后的材质（不透明）")]
+    public Material gluedMaterial;
+
     private void OnTriggerEnter(Collider other)
     {
         if (snapper.IsStickStage() || snapper.IsPlasterStage())
@@ -60,9 +63,23 @@ public class GluePoint : MonoBehaviour
     {
         Debug.Log($"{name} 上胶完成");
 
-        // TODO:
-        // 播放音效 / 特效
-        // 改变颜色
-        // 记录时间
+        // 切换材质为不透明
+        if (gluedMaterial != null)
+        {
+            Renderer renderer = GetComponentInChildren<Renderer>(true);
+            if (renderer != null)
+            {
+                Debug.Log($"{name} 切换材质 → {gluedMaterial.name}");
+                renderer.material = gluedMaterial;
+            }
+            else
+            {
+                Debug.LogWarning($"{name} 未找到 Renderer！请在 GluePoint 上添加 MeshRenderer 组件");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"{name} gluedMaterial 未赋值！");
+        }
     }
 }

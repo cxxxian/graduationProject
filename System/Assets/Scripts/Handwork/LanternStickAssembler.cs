@@ -47,6 +47,15 @@ public class LanternStickAssembler : MonoBehaviour
     public float hapticAmplitude = 1.0f;
     public float hapticDuration = 0.15f;
 
+    [Header("阶段完成音效")]
+    public AudioSource stageAudioSource;
+
+    [Header("介绍音频")]
+    // 音频Source
+    public AudioSource introAudio;
+    // 延迟播放秒数
+    public float introDelay = 3f;
+
     public BuildStage currentStage = BuildStage.DownBuild;
     private bool isSnapping = false;
 
@@ -55,6 +64,8 @@ public class LanternStickAssembler : MonoBehaviour
 
     private void Start()
     {
+        // 延迟播放介绍音频
+        StartCoroutine(PlayIntroAfterDelay());
         // 获取手柄设备
         var devices = new List<InputDevice>();
         InputDevices.GetDevicesAtXRNode(XRNode.RightHand, devices);
@@ -76,7 +87,26 @@ public class LanternStickAssembler : MonoBehaviour
         InitLayer(middleStarLayer);
         InitLayer(tasselLayer);
 
+        // 胶水层（初始隐藏）
+        HideGlueLayer(downGlueLayer);
+        HideGlueLayer(middleGlueLayer);
+
         currentStage = BuildStage.DownBuild;
+    }
+    
+    IEnumerator PlayIntroAfterDelay()
+    {
+        yield return new WaitForSeconds(introDelay);
+        PlayIntroAudio();
+    }
+    // 播放介绍音频
+    public void PlayIntroAudio()
+    {
+        if (introAudio != null)
+        {
+            introAudio.Stop();
+            introAudio.Play();
+        }
     }
 
     private void Update()
@@ -246,6 +276,7 @@ public class LanternStickAssembler : MonoBehaviour
             currentStage != BuildStage.MiddleStar &&
             currentStage != BuildStage.Tassel))
         {
+            PlayStageCompleteSound();
             EnterGlueStage();
         }
         else if(IsLayerStructureFinished(layer) && 
@@ -256,6 +287,7 @@ public class LanternStickAssembler : MonoBehaviour
             currentStage == BuildStage.MiddleStar ||
             currentStage == BuildStage.Tassel))
         {
+            PlayStageCompleteSound();
             EnterPlasterStage();
         }
         isSnapping = false;
@@ -265,11 +297,13 @@ public class LanternStickAssembler : MonoBehaviour
         if (currentStage == BuildStage.DownBuild)
         {
             currentStage = BuildStage.DownGlue;
+            ShowGlueLayer(downGlueLayer);
             Debug.Log("进入 DownGlue 阶段");
         }
         else if (currentStage == BuildStage.MiddleBuild)
         {
             currentStage = BuildStage.MiddleGlue;
+            ShowGlueLayer(middleGlueLayer);
             Debug.Log("进入 MiddleGlue 阶段");
         }
 
@@ -309,6 +343,7 @@ public class LanternStickAssembler : MonoBehaviour
     }
     public void OnGlueLayerFinished()
     {
+        PlayStageCompleteSound();
         if (currentStage == BuildStage.DownGlue)
         {
             currentStage = BuildStage.MiddleBuild;
@@ -369,6 +404,28 @@ public class LanternStickAssembler : MonoBehaviour
             g.gameObject.SetActive(false);
     }
 
+    void HideGlueLayer(GluePoint[] layer)
+    {
+        foreach (var point in layer)
+        {
+            Renderer renderer = point.GetComponentInChildren<Renderer>(true);
+            if (renderer != null)
+                renderer.gameObject.SetActive(false);
+        }
+    }
+
+    void ShowGlueLayer(GluePoint[] layer)
+    {
+        foreach (var point in layer)
+        {
+            Renderer renderer = point.GetComponentInChildren<Renderer>(true);
+            if (renderer != null)
+                renderer.gameObject.SetActive(true);
+            else
+                Debug.LogWarning($"GluePoint {point.name} 没有找到子物体 Renderer！");
+        }
+    }
+
     public void SetCurrentStick(Transform stick)
     {
         currentStick = stick;
@@ -418,6 +475,12 @@ public class LanternStickAssembler : MonoBehaviour
     public void Grab()
     {
         PlayerEventSystem.Instance.RecordGrab(currentStick.transform.gameObject);
+    }
+
+    void PlayStageCompleteSound()
+    {
+        if (stageAudioSource != null && stageAudioSource.clip != null)
+            stageAudioSource.Play();
     }
 
     void TriggerHapticFeedback()

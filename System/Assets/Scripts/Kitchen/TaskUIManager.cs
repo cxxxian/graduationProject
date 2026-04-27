@@ -21,7 +21,7 @@ public class TaskUIManager : MonoBehaviour
 
     // 通过手柄控制开关的任务面板
     public GameObject missionPanel;
-    public GameObject backHomeToggle;
+    //public GameObject backHomeToggle;
     // 上一帧 A 键状态
     private bool lastAPressed = false;
 
@@ -66,7 +66,7 @@ public class TaskUIManager : MonoBehaviour
         bool isActive = missionPanel.activeSelf;
 
         missionPanel.SetActive(!isActive);
-        backHomeToggle.SetActive(!isActive);
+        //backHomeToggle.SetActive(!isActive);
 
         if (isActive)
         {

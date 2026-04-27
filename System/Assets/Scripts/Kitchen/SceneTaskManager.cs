@@ -41,6 +41,12 @@ public class SceneTaskManager : MonoBehaviour
     [Header("任务完成检测")]
     public TaskEvaluator evaluator;
 
+    [Header("阶段完成音效")]
+    public AudioSource stageAudioSource;
+
+    [Header("关卡完成音效")]
+    public AudioSource levelAudioSource;
+
     void Start()
     {
         // 延迟播放介绍音频
@@ -99,7 +105,7 @@ public class SceneTaskManager : MonoBehaviour
     //}
     public void NextLevel()
     {
-        SceneManager.LoadScene("LivingRoomScene");
+        SceneManager.LoadScene("ShoppingPracticeScene");
     }
     public void BackHome()
     {
@@ -138,6 +144,7 @@ public class SceneTaskManager : MonoBehaviour
         {
             bool done = task.IsTaskComplete;
 
+
             // 更新是否完成UI
             if (uiManager != null)
             {
@@ -145,18 +152,38 @@ public class SceneTaskManager : MonoBehaviour
                 {
                     case "把冰箱中的香蕉全部拿到桌子上":
                         uiManager.SetBananaTaskComplete(done);
+                        if (done)
+                        {
+                            PlayStageCompleteSound();
+                        }
                         break;
                     case "将咖啡倒入杯子中":
                         uiManager.SetCoffeeTaskComplete(done);
+                        if (done)
+                        {
+                            PlayStageCompleteSound();
+                        }
                         break;
                     case "拿两片吐司到盘子中":
                         uiManager.SetBreadTaskComplete(done);
+                        if (done)
+                        {
+                            PlayStageCompleteSound();
+                        }
                         break;
                     case "开启/关闭虚拟计算器":
                         uiManager.SetPanelTaskComplete(done);
+                        if (done)
+                        {
+                            PlayStageCompleteSound();
+                        }
                         break;
                     case "推动购物车到指定位置":
                         uiManager.SetPushTaskComplete(done);
+                        if (done)
+                        {
+                            PlayStageCompleteSound();
+                        }
                         break;
 
                 }
@@ -180,11 +207,23 @@ public class SceneTaskManager : MonoBehaviour
             Debug.Log("所有任务已完成，等待玩家点击结算");
         }
     }
+    void PlayStageCompleteSound()
+    {
+        if (stageAudioSource != null && stageAudioSource.clip != null)
+            stageAudioSource.Play();
+    }
+
+    void PlayLevelCompleteSound()
+    {
+        if (levelAudioSource != null && levelAudioSource.clip != null)
+            levelAudioSource.Play();
+    }
 
     // 结算按钮点击（绑定到结算按钮）
     public void OnSettleButtonClick()
     {
         if (settleButton != null) settleButton.SetActive(false);
+        PlayLevelCompleteSound();
         OnAllTasksComplete();
     }
 

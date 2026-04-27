@@ -15,7 +15,9 @@ public class ProgressController : MonoBehaviour
     // 任务完成提示面板
     public GameObject completedPage;
     // 每个任务面板显示的时长
-    public float showPageDuration = 5f;
+    public float showPageDuration = 8f;
+    // 第一个页面（介绍音频）的显示时长
+    public float firstPageDuration = 18f;
     // 未完成面板显示时长
     public float uncompletedShowDuration = 5f;
 
@@ -41,6 +43,7 @@ public class ProgressController : MonoBehaviour
 
     private void Start()
     {
+        
         evaluator.OmissionErrors.Clear();
         // 初始化检查
         if (taskPages == null || taskPages.Length == 0)
@@ -204,8 +207,9 @@ public class ProgressController : MonoBehaviour
     // 任务面板显示时长的协程
     private IEnumerator ShowPageTimerCoroutine()
     {
-        // 等待指定时长
-        yield return new WaitForSeconds(showPageDuration);
+        // 第一个页面使用 firstPageDuration，其余使用 showPageDuration
+        float duration = (currentTaskIndex == 0) ? firstPageDuration : showPageDuration;
+        yield return new WaitForSeconds(duration);
 
         // 前两个面板（索引0、1）直接切下一页，第三个及以后切空白页
         if (currentTaskIndex < 2)

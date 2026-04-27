@@ -247,7 +247,7 @@ public class ShoppingTaskController : MonoBehaviour
 
     public void NextLevel()
     {
-        SceneManager.LoadScene("HandworkPracticeScene");
+        SceneManager.LoadScene("HandworkScene");
     }
     public void BackHome()
     {

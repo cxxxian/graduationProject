@@ -9,6 +9,7 @@ public class ResultUIManager : MonoBehaviour
 
     //public TMP_Text finalScoreText;
     public TMP_Text finalLevelText;
+    public TMP_Text finalRiskText;
 
     public TMP_Text nameText;
     public TMP_Text genderText;
@@ -34,6 +35,8 @@ public class ResultUIManager : MonoBehaviour
     {
         float totalScore = 0f;
         int count = 0;
+        var sceneScores = new System.Collections.Generic.Dictionary<string, float>();
+
         foreach (var result in TaskSessionManager.Instance.AllTaskResults)
         {
             switch (result.SceneName)
@@ -52,6 +55,7 @@ public class ResultUIManager : MonoBehaviour
             }
             // 计算每个场景得分
             float score = CalculateScore(result);
+            sceneScores[result.SceneName] = score;
             totalScore += score;
             count++;
         }
@@ -63,7 +67,13 @@ public class ResultUIManager : MonoBehaviour
         Debug.Log($"风险分：{finalScore:F2}（{riskPercent}%），风险等级：{finalLevel}");
 
         // 显示在UI上
-        finalLevelText.text = $"{finalLevel}\n与DD组认知特征匹配度：{riskPercent}%";
+        finalLevelText.text = $"{finalLevel}";
+        finalRiskText.text = $"与DD组认知特征匹配度：{riskPercent}%）";
+
+        // 导出报告
+        string userName = InformationCollection.Instance != null ? InformationCollection.Instance.userName : "";
+        string gender   = InformationCollection.Instance != null ? InformationCollection.Instance.gender : "";
+        ReportExporter.Export(userName, gender, TaskSessionManager.Instance.AllTaskResults, finalScore, finalLevel, riskPercent, sceneScores);
     }
 
     float CalculateScore(TaskResultData data)

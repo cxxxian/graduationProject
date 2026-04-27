@@ -63,6 +63,9 @@ public class ShoppingCart : MonoBehaviour
 
     public BasketTrigger basketTrigger;
 
+    [Header("关卡完成音效")]
+    public AudioSource levelAudioSource;
+
     void Start()
     {
         if (basketTrigger == null)
@@ -253,6 +256,12 @@ public class ShoppingCart : MonoBehaviour
         calculatorPriceText.text = price.ToString();
     }
 
+    void PlayLevelCompleteSound()
+    {
+        if (levelAudioSource != null && levelAudioSource.clip != null)
+            levelAudioSource.Play();
+    }
+
     public void Settle()
     {
         calculatorPricePanel.SetActive(false);
@@ -260,6 +269,7 @@ public class ShoppingCart : MonoBehaviour
         if (shoppingTaskController.isTaskCompleted)
         {
             ResultPanel.SetActive(true);
+            PlayLevelCompleteSound();
             ResultText.text = shoppingTaskController.taskCompletedText;
         }
         else

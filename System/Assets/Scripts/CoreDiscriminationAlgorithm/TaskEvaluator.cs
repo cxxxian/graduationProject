@@ -28,6 +28,9 @@ public class TaskEvaluator : MonoBehaviour
     public float PSMM;
     public float BE;
 
+    // 由场景控制器直接设置的游戏层面完成率（-1=使用行为分析推算）
+    public float gameCompletionRate = -1f;
+
     // 厨房任务评估入口
     public void EvaluateKitchen()
     {
@@ -177,7 +180,9 @@ public class TaskEvaluator : MonoBehaviour
         foreach (var e in MotorErrors)
             Debug.Log($"[运动错误Motor Error] Repeated or unstable action: {e.ActualEvent.Type} {e.ActualEvent.Target}");
 
-        PSMM = (float)standardSequence.Count / (float)actualSequence.Count;
+        PSMM = actualSequence.Count > 0
+            ? Mathf.Clamp01((float)standardSequence.Count / actualSequence.Count)
+            : 0f;
     }
 
     // 核心匹配逻辑
@@ -365,9 +370,16 @@ public class TaskEvaluator : MonoBehaviour
             Debug.Log("未扣减饼干预算");
         }
 
+        // OE（操作效率）= 最少所需商品数 / 实际放入购物车总次数
+        int totalCartOps = 0;
+        foreach (var e in logs)
+            if (e.Type == PlayerEventSystem.EventType.EnterZone) totalCartOps++;
+        PSMM = totalCartOps > 0 ? Mathf.Clamp01(6f / totalCartOps) : 0f;
+
         Debug.Log($"Omission: {OmissionErrors.Count}");
         Debug.Log($"Commission: {CommissionErrors.Count}");
         Debug.Log($"BE: {BE}");
+        Debug.Log($"OE(PSMM): {PSMM}");
     }
 
     // 手工任务评估入口
@@ -526,9 +538,16 @@ public class TaskEvaluator : MonoBehaviour
         {
             totalStandard = KitentaskDefinition.StandardSequence.Count;
         }
+        else
+        {
+            // 购物场景：3类必选商品（牛奶、饼干/酸奶、铅笔）
+            totalStandard = 3;
+        }
         
         
-        result.CompletionRate = (float)(totalStandard - OmissionErrors.Count) / totalStandard;
+        result.CompletionRate = gameCompletionRate >= 0f
+            ? gameCompletionRate
+            : Mathf.Clamp01((float)(totalStandard - OmissionErrors.Count) / totalStandard);
 
         // 保存真实 logs
         result.RawLogs = new List<PlayerEventSystem.PlayerEvent>(

@@ -238,6 +238,7 @@ public class SceneTaskManager : MonoBehaviour
 
         // 进行行为判定
         evaluator.EvaluateKitchen();
+        evaluator.gameCompletionRate = 1.0f;
 
         // 收集该场景的总结
         var result = evaluator.GetResultSummary();

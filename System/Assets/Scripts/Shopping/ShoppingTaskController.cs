@@ -185,6 +185,7 @@ public class ShoppingTaskController : MonoBehaviour
 
         // 进行行为判定
         evaluator.EvaluateShopping();
+        evaluator.gameCompletionRate = isTaskCompleted ? 1.0f : (basic ? 0.67f : 0f);
         // 收集该场景的总结
         var result = evaluator.GetResultSummary();
         TaskSessionManager.Instance.AddTaskResult(result);

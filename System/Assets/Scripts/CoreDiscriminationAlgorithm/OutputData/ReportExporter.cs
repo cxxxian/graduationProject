@@ -8,7 +8,7 @@ public static class ReportExporter
 {
     static readonly Dictionary<string, string> SceneNameMap = new Dictionary<string, string>
     {
-        { "KitchenTaskScene", "厨房任务" },
+        { "KitchenScene",     "厨房任务" },
         { "ShoppingScene",    "购物任务" },
         { "HandworkScene",    "手工任务" },
     };
@@ -51,7 +51,7 @@ public static class ReportExporter
         sb.AppendLine("<html lang=\"zh-CN\">");
         sb.AppendLine("<head>");
         sb.AppendLine("  <meta charset=\"UTF-8\">");
-        sb.AppendLine("  <title>VR执行功能评估报告</title>");
+        sb.AppendLine("  <title>VR任务行为分析报告</title>");
         sb.AppendLine("  <style>");
         sb.AppendLine("    body{font-family:'Microsoft YaHei',Arial,sans-serif;max-width:860px;margin:40px auto;color:#333;padding:0 20px;}");
         sb.AppendLine("    h1{text-align:center;color:#2c3e50;border-bottom:3px solid #3498db;padding-bottom:12px;}");
@@ -81,8 +81,8 @@ public static class ReportExporter
         sb.AppendLine("  <div class=\"card risk-wrap\">");
         sb.AppendLine("    <p style=\"font-size:1.05em;margin-bottom:10px;\"><strong>综合风险评估</strong></p>");
         sb.AppendLine($"    <span class=\"badge {levelCss}\">{finalLevel}</span>");
-        sb.AppendLine($"    <p>与 DD 组认知特征匹配度：<strong>{riskPercent}%</strong></p>");
-        sb.AppendLine($"    <p style=\"color:#888;font-size:0.88em;\">综合风险分：{finalScore:F3}（0=完全接近正常儿童，1=完全接近发育障碍儿童）</p>");
+        sb.AppendLine($"    <p>综合风险分值：<strong>{finalScore:F2}</strong></p>");
+        sb.AppendLine($"    <p style=\"color:#888;font-size:0.88em;\">（0=完全接近正常儿童，1=完全接近发育障碍儿童）</p>");
         sb.AppendLine("  </div>");
 
         // 各场景
@@ -98,9 +98,9 @@ public static class ReportExporter
             sb.AppendLine($"    <tr><td>遗漏错误（Omission）</td><td>{data.OmissionCount}</td><td>标准步骤中未执行的操作数</td></tr>");
             sb.AppendLine($"    <tr><td>执行错误（Commission）</td><td>{data.CommissionCount}</td><td>多余或顺序错误的操作数</td></tr>");
             sb.AppendLine($"    <tr><td>运动错误（Motor）</td><td>{data.MotorCount}</td><td>重复或不稳定操作次数</td></tr>");
-            sb.AppendLine($"    <tr><td>ITMN（任务启动时间）</td><td>{data.ITMN:F2} 秒</td><td>首次正确操作的时间戳</td></tr>");
-            sb.AppendLine($"    <tr><td>PSMM（计划效率）</td><td>{data.PSMM:F3}</td><td>标准步骤数 / 实际操作数，越低越冗余</td></tr>");
-            sb.AppendLine($"    <tr><td>BE（空间工作记忆错误）</td><td>{data.BE:F1}</td><td>对无效目标的重复访问次数</td></tr>");
+            sb.AppendLine($"    <tr><td>任务启动时间（TST）</td><td>{data.ITMN:F2} 秒</td><td>首次有效操作的时间戳</td></tr>");
+            sb.AppendLine($"    <tr><td>操作效率（OE）</td><td>{data.PSMM:F3}</td><td>标准步骤数 / 实际操作数，越低越冗余</td></tr>");
+            sb.AppendLine($"    <tr><td>重复无效操作次数（RIO）</td><td>{data.BE:F1}</td><td>对同一无效目标的重复操作次数</td></tr>");
             sb.AppendLine($"    <tr><td>场景风险分</td><td>{score:F3}</td><td>加权相似度评分（0~1）</td></tr>");
             sb.AppendLine("  </table>");
 
@@ -119,7 +119,7 @@ public static class ReportExporter
             }
         }
 
-        sb.AppendLine("  <div class=\"footer\">本报告由 VR 执行功能评估系统自动生成 &nbsp;|&nbsp; 风险模型基准数据来源：参考文献 TD/DD 组实验数据</div>");
+        sb.AppendLine("  <div class=\"footer\">本报告由面向儿童认知功能风险筛查 VR 系统自动生成</div>");
         sb.AppendLine("</body>");
         sb.AppendLine("</html>");
 

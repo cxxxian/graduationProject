@@ -16,15 +16,15 @@ public class ResultPanel : MonoBehaviour
 
     public void ShowResult(TaskResultData data)
     {
-        matchedText.text = "任务完成进度: " + data.MatchedCount;
+        matchedText.text = "任务完成率: " + (data.CompletionRate * 100f).ToString("F1") + "%";
         omissionText.text = "遗漏错误数量: " + data.OmissionCount;
         commissionText.text = "执行错误数量: " + data.CommissionCount;
         motorText.text = "运动错误数量: " + data.MotorCount;
 
         //completionText.text = "Completion: " + (data.CompletionRate * 100).ToString("F1") + "%";
 
-        itmnText.text = "ITMN: " + data.ITMN.ToString("F2");
-        psmmText.text = "PSMM: " + data.PSMM.ToString("F2");
-        beText.text = "BE: " + data.BE.ToString("F2");
+        itmnText.text = "TST: " + data.ITMN.ToString("F2");
+        psmmText.text = "OE: " + data.PSMM.ToString("F2");
+        beText.text = "RIO: " + data.BE.ToString("F2");
     }
 }
